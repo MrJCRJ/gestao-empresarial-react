@@ -14,11 +14,19 @@
 .appHeader {
   background-color: var(--dark-color);
   color: white;
-  padding: 1rem 0;
+  padding: 1.5rem 0; /* Padding maior inicialmente (do primeiro header) */
   box-shadow: var(--shadow);
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: var(--transition);
+  width: 100%;
+}
+
+/* Header reduzido quando scroll */
+.appHeader.scrolled {
+  padding: 0.75rem 0; /* Padding reduzido (do primeiro header) */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra mais pronunciada (do primeiro header) */
 }
 
 .headerContent {
@@ -28,15 +36,22 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
+  transition: var(--transition);
 }
 
 /* ===== LOGO ===== */
 .logo {
-  font-size: 1.8rem;
+  font-size: 2rem; /* Tamanho maior inicialmente (do primeiro header) */
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: var(--transition);
+}
+
+/* Ajuste do logo quando scroll */
+.appHeader.scrolled .logo {
+  font-size: 1.5rem; /* Tamanho reduzido (do primeiro header) */
 }
 
 .logoHero {
@@ -57,7 +72,7 @@
   background: none;
   border: none;
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem; /* Padding maior inicialmente (do primeiro header) */
   border-radius: 4px;
   cursor: pointer;
   display: flex;
@@ -65,6 +80,10 @@
   gap: 0.5rem;
   transition: var(--transition);
   font-size: 1rem;
+}
+
+.appHeader.scrolled .desktopNav button {
+  padding: 0.5rem 1rem; /* Padding reduzido (do primeiro header) */
 }
 
 .desktopNav button:hover {

@@ -1,7 +1,7 @@
-// src/components/App/Header/Header.tsx
+// src/components/Header/Header.tsx
 import { FiHome, FiTruck, FiUsers, FiPackage } from 'react-icons/fi';
 import styles from './Header.module.css';
-import { Dispatch, SetStateAction, ReactElement } from 'react';
+import { Dispatch, SetStateAction, ReactElement, useEffect, useState } from 'react';
 
 type AppComponent = 'BalancoView' | 'FormFornecedor' | 'FormCliente' | 'FormProduto';
 
@@ -18,7 +18,22 @@ export default function Header({
   isMenuOpen,
   setIsMenuOpen,
 }: HeaderProps): ReactElement {
+  const [scrolled, setScrolled] = useState(false);
   const toggleMenu = () => setIsMenuOpen((prev) => !prev);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 50; // Aumentei o threshold para 50px (do primeiro header)
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
+    };
+
+    document.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      document.removeEventListener('scroll', handleScroll);
+    };
+  }, [scrolled]);
 
   const navItems = [
     { component: 'BalancoView', icon: <FiHome className={styles.navIcon} />, label: 'Início' },
@@ -32,7 +47,7 @@ export default function Header({
   ];
 
   return (
-    <header className={styles.appHeader} role="banner">
+    <header className={`${styles.appHeader} ${scrolled ? styles.scrolled : ''}`} role="banner">
       <div className={styles.headerContent}>
         <h1 className={styles.logo}>
           <span className={styles.logoHero}>Hero</span>
@@ -63,7 +78,7 @@ export default function Header({
       </div>
 
       {isMenuOpen && (
-        <div className={styles.mobileNav} role="navigation" aria-label="Menu mobile">
+        <nav className={styles.mobileNav} role="navigation" aria-label="Menu mobile">
           {navItems.map((item) => (
             <button
               key={item.component}
@@ -72,11 +87,12 @@ export default function Header({
                 setIsMenuOpen(false);
               }}
               className={activeComponent === item.component ? styles.active : ''}
+              aria-current={activeComponent === item.component ? 'page' : undefined}
             >
               {item.icon} {item.label}
             </button>
           ))}
-        </div>
+        </nav>
       )}
     </header>
   );

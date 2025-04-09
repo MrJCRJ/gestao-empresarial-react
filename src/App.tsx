@@ -81,9 +81,13 @@ export default function App() {
         setIsMenuOpen={setIsMenuOpen}
       />
 
-      <Main ActiveComponent={ActiveComponent} />
+      <main className={styles.mainContent}>
+        <Main ActiveComponent={ActiveComponent} />
+      </main>
 
-      <Footer handleExport={handleExport} handleImport={handleImport} fileInputRef={fileInput} />
+      <footer className={styles.footer}>
+        <Footer handleExport={handleExport} handleImport={handleImport} fileInputRef={fileInput} />
+      </footer>
     </div>
   );
 }
