@@ -1,0 +1,47 @@
+/* src/components/Main.module.css */
+
+/* ===== VARIÁVEIS ===== */
+:root {
+  --bg-light: #f8f9fa;
+  --content-width: 1200px;
+  --spacing-unit: 1rem;
+}
+
+/* ===== MAIN CONTENT ===== */
+.appMain {
+  flex: 1; /* Ocupa todo espaço disponível */
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 2rem auto;
+  padding: 0 var(--spacing-unit);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ===== ANIMAÇÃO DE ENTRADA ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .appMain {
+    margin: 1rem auto;
+    padding: 0 calc(var(--spacing-unit) * 0.5);
+  }
+}
+
+/* ===== ESTILOS PARA ERROS ===== */
+.errorMessage {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+  font-size: 1.1rem;
+  font-weight: 500;
+}

@@ -1,0 +1,95 @@
+/* src/components/App/Footer/Footer.module.css */
+
+/* ===== VARIÁVEIS ===== */
+:root {
+  --primary-color: #4a6fa5;
+  --dark-color: #2c3e50;
+  --text-light: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.7);
+  --transition: all 0.3s ease;
+}
+
+/* ===== FOOTER PRINCIPAL ===== */
+.appFooter {
+  background-color: var(--dark-color);
+  color: var(--text-light);
+  padding: 2rem 0;
+  margin-top: auto; /* Mantém o footer no fundo */
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footerContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ===== BOTÕES DE AÇÃO ===== */
+.fileActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footerButton {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.footerButton:hover {
+  background-color: #3a5a8a;
+  transform: translateY(-2px);
+}
+
+.footerButton:active {
+  transform: translateY(0);
+}
+
+/* ===== INFORMAÇÕES DO FOOTER ===== */
+.footerInfo {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.footerInfo p {
+  margin: 0.25rem 0;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .appFooter {
+    padding: 1.5rem 0;
+  }
+
+  .footerContent {
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
+  .fileActions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .footerButton {
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+  }
+}

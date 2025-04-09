@@ -1,0 +1,206 @@
+/* ===== VARIÁVEIS ===== */
+:root {
+  --primary-color: #4a6fa5;
+  --secondary-color: #ff7e5f;
+  --dark-color: #2c3e50;
+  --light-color: #f8f9fa;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+/* ===== RESET E BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f7fa;
+}
+
+/* ===== LAYOUT PRINCIPAL ===== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ===== HEADER ===== */
+.app-header {
+  background-color: var(--dark-color);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+}
+
+.logo-hero {
+  color: var(--primary-color);
+}
+
+.logo-pet {
+  color: var(--secondary-color);
+}
+
+/* ===== NAVEGAÇÃO ===== */
+.desktop-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.desktop-nav button,
+.mobile-nav button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+}
+
+.desktop-nav button:hover,
+.mobile-nav button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.desktop-nav button.active {
+  background-color: var(--primary-color);
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+}
+
+.mobile-menu-button {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.mobile-nav {
+  display: none;
+  flex-direction: column;
+  background-color: var(--dark-color);
+  padding: 1rem;
+  gap: 0.5rem;
+}
+
+/* ===== MAIN CONTENT ===== */
+.app-main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--danger-color);
+}
+
+/* ===== FOOTER ===== */
+.app-footer {
+  background-color: var(--dark-color);
+  color: white;
+  padding: 2rem 0;
+  margin-top: auto;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.file-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.footer-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--transition);
+}
+
+.footer-button:hover {
+  background-color: #3a5a8a;
+}
+
+.footer-info {
+  text-align: center;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 768px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-menu-button {
+    display: block;
+  }
+
+  .mobile-nav {
+    display: flex;
+  }
+
+  .header-content,
+  .app-main,
+  .footer-content {
+    padding: 0 1rem;
+  }
+
+  .file-actions {
+    flex-direction: column;
+  }
+
+  .footer-button {
+    justify-content: center;
+  }
+}
