@@ -1,35 +1,87 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useRef } from "react";
+import { useEmpresaStore } from "./stores/useEmpresaStore";
+import BalancoView from "./components/BalancoView";
+import FormFornecedor from "./components/FormFornecedor";
+import FormCliente from "./components/FormCliente";
+import FormProduto from "./components/FormProduto";
 
-function App() {
-  const [count, setCount] = useState(0)
+const components = {
+  BalancoView,
+  FormFornecedor,
+  FormCliente,
+  FormProduto,
+};
+
+export default function App() {
+  const empresaStore = useEmpresaStore();
+  const [activeComponent, setActiveComponent] = useState("BalancoView");
+  const fileInput = useRef(null);
+
+  const ActiveComponent = components[activeComponent];
+
+  async function handleExport() {
+    try {
+      empresaStore.exportToFile();
+    } catch (error) {
+      alert(`Erro ao exportar: ${error.message}`);
+    }
+  }
+
+  function triggerImport() {
+    fileInput.current.click();
+  }
+
+  async function handleImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      await empresaStore.importFromFile(file);
+      alert("Dados importados com sucesso!");
+    } catch (error) {
+      alert(`Erro ao importar: ${error.message}`);
+    } finally {
+      event.target.value = null;
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div className="app-container">
+      <header>
+        <h1>Gestão Empresarial</h1>
+        <nav>
+          <button onClick={() => setActiveComponent("BalancoView")}>
+            Balanço
+          </button>
+          <button onClick={() => setActiveComponent("FormFornecedor")}>
+            Fornecedores
+          </button>
+          <button onClick={() => setActiveComponent("FormCliente")}>
+            Clientes
+          </button>
+          <button onClick={() => setActiveComponent("FormProduto")}>
+            Produtos
+          </button>
+        </nav>
+      </header>
 
-export default App
+      <main>
+        <ActiveComponent />
+      </main>
+
+      <footer>
+        <div className="file-actions">
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".json"
+            onChange={handleImport}
+            style={{ display: "none" }}
+          />
+          <button onClick={handleExport}>Exportar Dados</button>
+          <button onClick={triggerImport}>Importar Dados</button>
+        </div>
+      </footer>
+    </div>
+  );
+}
