@@ -13,17 +13,9 @@ interface Fornecedor {
   // ... outros campos
 }
 
-interface Produto {
-  id: string;
-  nome: string;
-  preco: number;
-  // ... outros campos
-}
-
 interface EmpresaStoreState {
   clientes: Cliente[];
   fornecedores: Fornecedor[];
-  produtos: Produto[];
   exportToFile: () => void;
   importFromFile: (file: File) => Promise<void>;
   // Adicione outros estados/métodos conforme necessário
@@ -39,7 +31,6 @@ export const useEmpresaStore = create<EmpresaStoreState>((set, get) => ({
     const data = {
       clientes: currentState.clientes,
       fornecedores: currentState.fornecedores,
-      produtos: currentState.produtos,
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -67,7 +58,6 @@ export const useEmpresaStore = create<EmpresaStoreState>((set, get) => ({
           set({
             clientes: Array.isArray(data.clientes) ? data.clientes : [],
             fornecedores: Array.isArray(data.fornecedores) ? data.fornecedores : [],
-            produtos: Array.isArray(data.produtos) ? data.produtos : [],
           });
 
           resolve();

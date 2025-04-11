@@ -1,9 +1,18 @@
 // src/components/Header/Header.tsx
-import { FiHome, FiTruck, FiUsers, FiPackage } from 'react-icons/fi';
+import {
+  FiHome,
+  FiTruck,
+  FiUsers,
+  FiPackage,
+  FiShoppingCart,
+  FiShoppingBag,
+  FiList,
+} from 'react-icons/fi';
 import styles from './Header.module.css';
 import { Dispatch, SetStateAction, ReactElement, useEffect, useState } from 'react';
 
-type AppComponent = 'BalancoView' | 'FormFornecedor' | 'FormCliente' | 'FormProduto';
+// Atualize seu tipo AppComponent
+type AppComponent = 'BalancoView' | 'FormFornecedor' | 'FormCliente';
 
 interface HeaderProps {
   activeComponent: AppComponent;
@@ -36,14 +45,9 @@ export default function Header({
   }, [scrolled]);
 
   const navItems = [
-    { component: 'BalancoView', icon: <FiHome className={styles.navIcon} />, label: 'Início' },
-    {
-      component: 'FormFornecedor',
-      icon: <FiTruck className={styles.navIcon} />,
-      label: 'Fornecedores',
-    },
-    { component: 'FormCliente', icon: <FiUsers className={styles.navIcon} />, label: 'Clientes' },
-    { component: 'FormProduto', icon: <FiPackage className={styles.navIcon} />, label: 'Produtos' },
+    { component: 'BalancoView', icon: <FiHome />, label: 'Início' },
+    { component: 'FormFornecedor', icon: <FiTruck />, label: 'Fornecedores' },
+    { component: 'FormCliente', icon: <FiUsers />, label: 'Clientes' },
   ];
 
   return (

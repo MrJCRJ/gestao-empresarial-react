@@ -1,82 +1,6 @@
-.formContainer {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+/* FormCliente.module.css */
 
-.formTitle {
-  text-align: center;
-  color: #333;
-  margin-bottom: 20px;
-}
-
-.formGroup {
-  margin-bottom: 15px;
-}
-
-.formRow {
-  display: flex;
-  gap: 20px;
-}
-
-.formRow .formGroup {
-  flex: 1;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-
-input[type='text'],
-input[type='tel'],
-input[type='email'],
-select,
-textarea {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.checkboxGroup {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: normal;
-}
-
-.formActions {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.submitButton {
-  background-color: #4caf50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.submitButton:hover {
-  background-color: #45a049;
-}
-/* FormFornecedor.module.css */
-
-/* Container principal e tabs */
+/* Container principal */
 .container {
   width: 100%;
   max-width: 1200px;
@@ -84,6 +8,7 @@ textarea {
   padding: 1rem;
 }
 
+/* Estilos das abas */
 .tabButtons {
   display: flex;
   gap: 0.5rem;
@@ -114,17 +39,15 @@ textarea {
   color: white;
 }
 
+/* Conteúdo das abas */
 .tabContent {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0; /* Removemos o padding para o formContainer cuidar disso */
 }
 
-/* Estilos do formulário original (agora na tab de dados) */
+/* Estilos do formulário de dados */
 .formContainer {
-  max-width: 100%; /* Ajuste para ocupar toda a tab */
-  margin: 0;
   padding: 20px;
   background-color: #f9f9f9;
   border-radius: 8px;
@@ -134,6 +57,7 @@ textarea {
   text-align: center;
   color: #333;
   margin-bottom: 20px;
+  font-size: 1.5rem;
 }
 
 .formGroup {
@@ -153,24 +77,37 @@ label {
   display: block;
   margin-bottom: 5px;
   font-weight: 500;
+  color: #555;
 }
 
 input[type='text'],
 input[type='tel'],
 input[type='email'],
-input[type='checkbox'],
+input[type='date'],
+input[type='number'],
 select,
 textarea {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #4a6fa5;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
 }
 
 .checkboxGroup {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  margin-top: 5px;
 }
 
 .checkboxLabel {
@@ -178,32 +115,35 @@ textarea {
   align-items: center;
   gap: 5px;
   font-weight: normal;
-  white-space: nowrap;
+  cursor: pointer;
 }
 
 .formActions {
   text-align: center;
-  margin-top: 20px;
+  margin-top: 25px;
 }
 
 .submitButton {
   background-color: #4caf50;
   color: white;
-  padding: 10px 20px;
+  padding: 12px 25px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
+  font-weight: 500;
   transition: background-color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .submitButton:hover {
   background-color: #45a049;
 }
 
-/* Estilos para as novas tabs (Pedidos e Catálogo) */
-.pedidosContainer,
-.catalogoContainer {
+/* Estilos da tabela de pedidos */
+.pedidosContainer {
   padding: 20px;
 }
 
@@ -211,6 +151,7 @@ textarea {
   text-align: center;
   color: #333;
   margin-bottom: 20px;
+  font-size: 1.5rem;
 }
 
 .tableWrapper {
@@ -218,7 +159,6 @@ textarea {
   margin: 1rem 0;
   background-color: #f9f9f9;
   border-radius: 8px;
-  padding: 1px; /* Para a sombra não ficar cortada */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -234,11 +174,12 @@ textarea {
   color: white;
   padding: 12px;
   text-align: left;
+  font-weight: 500;
 }
 
 .table td {
   padding: 12px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
 }
 
 .status {
@@ -264,20 +205,11 @@ textarea {
   color: #721c24;
 }
 
-.available {
-  color: #28a745;
-  font-weight: 500;
-}
-
-.unavailable {
-  color: #dc3545;
-  font-weight: 500;
-}
-
 .noData {
   text-align: center;
   padding: 2rem;
   color: #6c757d;
+  font-style: italic;
 }
 
 .actionButton {
@@ -293,25 +225,6 @@ textarea {
 
 .actionButton:hover {
   background: #f0f0f0;
-}
-
-.addButton {
-  padding: 0.75rem 1.5rem;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  font-size: 1rem;
-  transition: background-color 0.3s;
-}
-
-.addButton:hover {
-  background-color: #45a049;
 }
 
 /* Responsividade */
@@ -340,5 +253,6 @@ textarea {
   .actionButton {
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
+    margin-bottom: 0.3rem;
   }
 }

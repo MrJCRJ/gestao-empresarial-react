@@ -7,16 +7,14 @@ import Footer from './components/Footer';
 import BalancoView from './components/BalancoView';
 import FormFornecedor from './components/FormFornecedor';
 import FormCliente from './components/FormCliente';
-import FormProduto from './components/FormProduto';
 import styles from './App.module.css';
 
-type ComponentKey = 'BalancoView' | 'FormFornecedor' | 'FormCliente' | 'FormProduto';
+type ComponentKey = 'BalancoView' | 'FormFornecedor' | 'FormCliente';
 
 const COMPONENT_MAP: Record<ComponentKey, React.ComponentType> = {
   BalancoView,
   FormFornecedor,
   FormCliente,
-  FormProduto,
 };
 
 const VALID_COMPONENTS = Object.keys(COMPONENT_MAP) as ComponentKey[];
