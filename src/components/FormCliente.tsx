@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiUser, FiShoppingBag } from 'react-icons/fi';
 import styles from './FormCliente.module.css';
 
@@ -41,6 +41,36 @@ export default function FormCliente() {
 
 // Subcomponentes
 function DadosCliente() {
+  const [cep, setCep] = useState('');
+  const [endereco, setEndereco] = useState({
+    logradouro: '',
+    bairro: '',
+    localidade: '',
+    uf: '',
+  });
+  useEffect(() => {
+    const fetchEndereco = async () => {
+      const cepLimpo = cep.replace(/\D/g, '');
+      if (cepLimpo.length === 8) {
+        try {
+          const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+          const data = await res.json();
+          if (!data.erro) {
+            setEndereco({
+              logradouro: data.logradouro || '',
+              bairro: data.bairro || '',
+              localidade: data.localidade || '',
+              uf: data.uf || '',
+            });
+          }
+        } catch (err) {
+          console.error('Erro ao buscar endereço:', err);
+        }
+      }
+    };
+
+    fetchEndereco();
+  }, [cep]);
   return (
     <form className={styles.formContainer}>
       <h3 className={styles.formTitle}>Dados do Cliente</h3>
@@ -92,26 +122,37 @@ function DadosCliente() {
       {/* Endereço */}
       <div className={styles.formGroup}>
         <label>CEP</label>
-        <input type="text" placeholder="00000-000" />
+        <input
+          type="text"
+          value={cep}
+          onChange={(e) => setCep(e.target.value)}
+          placeholder="00000-000"
+        />
       </div>
 
-      <div className={styles.formGroup}>
-        <label>Endereço</label>
-        <input type="text" placeholder="Rua, número, complemento" />
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label>Endereço</label>
+          <input type="text" value={endereco.logradouro} readOnly />
+        </div>
+        <div className={styles.formGroup}>
+          <label>Número</label>
+          <input type="text" />
+        </div>
       </div>
 
       <div className={styles.formRow}>
         <div className={styles.formGroup}>
           <label>Bairro</label>
-          <input type="text" />
+          <input type="text" value={endereco.bairro} readOnly />
         </div>
         <div className={styles.formGroup}>
           <label>Cidade</label>
-          <input type="text" />
+          <input type="text" value={endereco.localidade} readOnly />
         </div>
         <div className={styles.formGroup}>
           <label>Estado</label>
-          <input type="text" placeholder="UF" />
+          <input type="text" value={endereco.uf} readOnly />
         </div>
       </div>
 
