@@ -2,11 +2,13 @@
 export type ClienteTab = 'lista' | 'detalhes';
 
 export type EnderecoType = {
+  cep: string; // Adicionei o cep aqui
   logradouro: string;
   bairro: string;
   localidade: string;
   uf: string;
   numero: string;
+  complemento?: string; // Adicionei como opcional
 };
 
 export interface Cliente {
@@ -18,8 +20,7 @@ export interface Cliente {
   responsavel: string;
   telefone: string;
   email: string;
-  cep: string;
-  endereco: EnderecoType;
+  endereco: EnderecoType; // Removi o cep daqui já que está no EnderecoType
   observacoes: string;
   version?: number;
   pendingSync?: boolean;

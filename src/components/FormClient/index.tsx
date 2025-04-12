@@ -71,13 +71,14 @@ export default function FormCliente() {
         responsavel: '',
         telefone: '',
         email: '',
-        cep: '',
+
         endereco: {
           logradouro: '',
           bairro: '',
           localidade: '',
           uf: '',
           numero: '',
+          cep: '',
         },
         observacoes: '',
         pendingSync: true,
@@ -182,6 +183,7 @@ export default function FormCliente() {
           onClose={() => setModalState({ ...modalState, open: false })}
           onSave={handleSaveCliente}
           onDelete={modalState.mode === 'view' ? handleDeleteCliente : undefined}
+          isOnline={navigator.onLine}
         />
       )}
     </div>

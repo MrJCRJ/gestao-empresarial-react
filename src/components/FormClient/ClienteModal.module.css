@@ -1,3 +1,6 @@
+/* ClienteModal.module.css */
+
+/* Overlay do modal */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -9,88 +12,302 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.3s ease-out;
 }
 
+/* Conteúdo principal do modal */
 .modalContent {
   background-color: white;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
 }
 
+/* Cabeçalho do modal */
 .modalHeader {
-  padding: 15px 20px;
-  border-bottom: 1px solid #eee;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
 }
 
-.modalTitle {
+.modalHeader h2 {
   margin: 0;
-  font-size: 1.2rem;
-  color: #333;
+  font-size: 1.5rem;
+  color: #2d3748;
+  font-weight: 600;
 }
 
 .closeButton {
   background: none;
   border: none;
-  font-size: 1.5rem;
   cursor: pointer;
-  color: #666;
-  padding: 0;
-  line-height: 1;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+  color: #718096;
 }
 
+.closeButton:hover {
+  background-color: #f7fafc;
+  color: #4a5568;
+}
+
+.closeButton svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Corpo do modal */
 .modalBody {
-  padding: 20px;
+  padding: 1.5rem;
+  flex-grow: 1;
 }
 
-.modalFooter {
-  padding: 15px 20px;
-  border-top: 1px solid #eee;
+/* Mensagem de erro de conexão */
+.connectionError {
+  background-color: #fff5f5;
+  color: #c53030;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #fed7d7;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.connectionError p {
+  margin: 0;
+}
+
+/* Grupos de campos */
+.fieldset {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.fieldset legend {
+  padding: 0 0.5rem;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Layout do formulário */
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.formGroup {
+  flex: 1;
+  min-width: 200px;
+  margin-bottom: 0.75rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+.formGroup label:after {
+  content: '*';
+  color: #e53e3e;
+  margin-left: 0.25rem;
+  display: none;
+}
+
+.formGroup label[for]:after {
+  display: inline;
+}
+
+/* Elementos do formulário */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  background-color: white;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23718096' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+}
+
+/* Estilos para erros */
+.errorInput {
+  border-color: #e53e3e;
+}
+
+.errorInput:focus {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+}
+
+.errorMessage {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #e53e3e;
+}
+
+/* Ações do formulário */
+.formActions,
+.viewActions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
 }
 
-.modalButton {
-  padding: 8px 16px;
+button {
+  padding: 0.625rem 1.25rem;
   border-radius: 4px;
   font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  border: none;
 }
 
 .saveButton {
-  background-color: #4caf50;
+  background-color: #4299e1;
   color: white;
-  border: none;
 }
 
-.saveButton:hover {
-  background-color: #45a049;
+.saveButton:hover:not(:disabled) {
+  background-color: #3182ce;
+}
+
+.saveButton:disabled {
+  background-color: #bee3f8;
+  cursor: not-allowed;
 }
 
 .cancelButton {
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  color: #333;
+  background-color: white;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
 }
 
 .cancelButton:hover {
-  background-color: #e0e0e0;
+  background-color: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.editButton {
+  background-color: #38a169;
+  color: white;
+}
+
+.editButton:hover:not(:disabled) {
+  background-color: #2f855a;
 }
 
 .deleteButton {
-  background-color: #f44336;
+  background-color: #e53e3e;
   color: white;
-  border: none;
 }
 
-.deleteButton:hover {
-  background-color: #d32f2f;
+.deleteButton:hover:not(:disabled) {
+  background-color: #c53030;
+}
+
+/* Animações */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .modalContent {
+    width: 95%;
+  }
+
+  .formRow {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .formGroup {
+    min-width: 100%;
+  }
+
+  .formActions,
+  .viewActions {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  button {
+    width: 100%;
+  }
 }
