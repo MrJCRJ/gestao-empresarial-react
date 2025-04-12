@@ -1,21 +1,26 @@
-// src/services/offlineManager.ts
 import { Cliente } from '../components/FormClient/types';
+
+interface SyncResult {
+  success: boolean;
+  errors?: any[];
+}
 
 class OfflineManager {
   private backendUrl = 'https://seuservidor.com/api';
-  private isBackendAlive = false;
   private dbName = 'HeroPetDB';
   private dbVersion = 1;
   private db: IDBDatabase | null = null;
-  private syncQueue: any[] = [];
-  private isOnline = navigator.onLine;
   private syncInterval: number | null = null;
+  private isOnline = navigator.onLine;
+  private isBackendAlive = false;
 
   constructor() {
     this.initDB();
     this.setupListeners();
     this.startSyncInterval();
-    this.checkBackendStatus();
+    this.checkBackendStatus().then((status) => {
+      this.isBackendAlive = status;
+    });
   }
 
   // Novo método para verificar status do backend
@@ -35,8 +40,10 @@ class OfflineManager {
 
       clearTimeout(timeoutId);
 
+      this.isBackendAlive = response.ok;
       return response.ok;
     } catch (error) {
+      this.isBackendAlive = false;
       if (error === 'AbortError') {
         console.error('[OfflineManager] Timeout: Backend não respondeu em 5 segundos');
       } else {
@@ -81,7 +88,6 @@ class OfflineManager {
 
     request.onsuccess = (event) => {
       this.db = (event.target as IDBOpenDBRequest).result;
-      this.checkSyncQueue();
     };
 
     request.onerror = (event) => {
@@ -242,6 +248,46 @@ class OfflineManager {
         resolve([]);
       };
     });
+  }
+
+  // Método público para sincronização
+  public async syncQueue(): Promise<SyncResult> {
+    if (!this.db) return { success: false, errors: ['Database not initialized'] };
+
+    try {
+      const transaction = this.db.transaction(['syncQueue'], 'readwrite');
+      const store = transaction.objectStore('syncQueue');
+      const items = await new Promise<any[]>((resolve) => {
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => resolve([]);
+      });
+
+      const errors: any[] = [];
+
+      for (const item of items) {
+        try {
+          // Simulação de chamada ao backend
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // Remove da fila se bem-sucedido
+          await new Promise((resolve) => {
+            const deleteRequest = store.delete(item.id);
+            deleteRequest.onsuccess = () => resolve(true);
+            deleteRequest.onerror = () => resolve(false);
+          });
+        } catch (error) {
+          errors.push({ id: item.id, error });
+        }
+      }
+
+      return {
+        success: errors.length === 0,
+        errors: errors.length > 0 ? errors : undefined,
+      };
+    } catch (error) {
+      return { success: false, errors: [error] };
+    }
   }
 }
 

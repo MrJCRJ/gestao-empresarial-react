@@ -1,0 +1,310 @@
+/* Container principal */
+.clientesContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* Cabeçalho */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.headerTitle h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #2d3748;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loadingIndicator {
+  font-size: 0.875rem;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Botões */
+.addButton {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.addButton:hover:not(:disabled) {
+  background-color: #3182ce;
+}
+
+.addButton:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.refreshButton {
+  background: none;
+  border: none;
+  color: #4a5568;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background-color: #edf2f7;
+}
+
+.refreshButton:disabled {
+  color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Status offline */
+.offlineBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #fffaf0;
+  color: #dd6b20;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+/* Grid de clientes */
+.clientesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Estado vazio */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background-color: #f7fafc;
+  border-radius: 8px;
+  text-align: center;
+  gap: 1rem;
+}
+
+.emptyState p {
+  margin: 0;
+  color: #4a5568;
+}
+
+/* Card de cliente */
+.clienteCard {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+}
+
+.clienteCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.clienteCard.pending {
+  border-left: 4px solid #dd6b20;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ebf8ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4299e1;
+}
+
+.userIcon {
+  font-size: 1.25rem;
+}
+
+.cardTitle {
+  flex: 1;
+}
+
+.cardTitle h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #2d3748;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.documento {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: #718096;
+}
+
+.syncIndicator {
+  font-size: 0.75rem;
+  color: #dd6b20;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.cardContent {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.email,
+.telefone,
+.localidade {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.email a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.email a:hover {
+  text-decoration: underline;
+  color: #3182ce;
+}
+
+/* Ações do card */
+.cardActions {
+  display: flex;
+  padding: 0.75rem;
+  border-top: 1px solid #edf2f7;
+  gap: 0.5rem;
+}
+
+.viewButton,
+.editButton,
+.deleteButton {
+  flex: 1;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.viewButton {
+  background-color: #ebf8ff;
+  color: #3182ce;
+}
+
+.viewButton:hover {
+  background-color: #bee3f8;
+}
+
+.editButton {
+  background-color: #f0fff4;
+  color: #38a169;
+}
+
+.editButton:hover:not(:disabled) {
+  background-color: #c6f6d5;
+}
+
+.deleteButton {
+  background-color: #fff5f5;
+  color: #e53e3e;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background-color: #fed7d7;
+}
+
+.editButton:disabled,
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .clientesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
