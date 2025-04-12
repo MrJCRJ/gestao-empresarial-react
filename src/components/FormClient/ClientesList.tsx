@@ -34,10 +34,12 @@ export function ClientesList({
         </div>
 
         <div className={styles.headerActions}>
-          {!isOnline && (
-            <div className={styles.offlineBadge}>
-              <FiWifiOff />
-              <span>{pendingSyncCount} pendentes</span>
+          {pendingSyncCount > 0 && (
+            <div className={`${styles.syncBadge} ${!isOnline ? styles.offline : ''}`}>
+              <FiWifiOff className={!isOnline ? styles.offlineIcon : ''} />
+              <span>
+                {pendingSyncCount} pendente{pendingSyncCount !== 1 ? 's' : ''}
+              </span>
             </div>
           )}
 
@@ -45,14 +47,14 @@ export function ClientesList({
             <button
               onClick={onRefresh}
               className={styles.refreshButton}
-              disabled={!isOnline || isLoading}
+              disabled={isLoading}
               title="Recarregar clientes"
             >
               <FiRefreshCw className={isLoading ? styles.spin : ''} />
             </button>
           )}
 
-          <button onClick={onAdd} className={styles.addButton} disabled={!isOnline}>
+          <button onClick={onAdd} className={styles.addButton}>
             <FiPlus /> Novo Cliente
           </button>
         </div>
@@ -119,7 +121,6 @@ export function ClientesList({
                     onEdit(cliente);
                   }}
                   className={styles.editButton}
-                  disabled={!isOnline}
                 >
                   <FiEdit2 />
                 </button>
@@ -129,7 +130,6 @@ export function ClientesList({
                     onDelete(cliente.id);
                   }}
                   className={styles.deleteButton}
-                  disabled={!isOnline}
                 >
                   <FiTrash2 />
                 </button>

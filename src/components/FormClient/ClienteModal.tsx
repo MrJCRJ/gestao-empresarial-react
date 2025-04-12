@@ -1,9 +1,9 @@
-import { FiX } from 'react-icons/fi';
+import { FiX, FiWifiOff } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 import styles from './ClienteModal.module.css';
 import { Cliente } from './types';
 
-// Implementação das máscaras localmente (substitua pelo seu módulo masks se necessário)
+// Implementação das máscaras
 const maskCnpj = (value: string) => {
   return value
     .replace(/\D/g, '')
@@ -45,7 +45,7 @@ type ClienteModalProps = {
   onSave: (cliente: Cliente) => void;
   onDelete?: (id: string) => void;
   loading?: boolean;
-  isOnline?: boolean; // Adicionado para verificar conexão
+  isOnline?: boolean;
 };
 
 export function ClienteModal({
@@ -55,24 +55,16 @@ export function ClienteModal({
   onSave,
   onDelete,
   loading = false,
-  isOnline = true, // Assume online por padrão
+  isOnline = true,
 }: ClienteModalProps) {
   const [formData, setFormData] = useState<Cliente>(cliente);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [connectionError, setConnectionError] = useState(false);
 
   // Atualiza formData quando o cliente prop muda
   useEffect(() => {
     setFormData(cliente);
   }, [cliente]);
-
-  // Verifica a conexão quando o componente é montado
-  useEffect(() => {
-    if (!isOnline) {
-      setConnectionError(true);
-    }
-  }, [isOnline]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -125,11 +117,8 @@ export function ClienteModal({
     return cleanDoc.length === 11 || cleanDoc.length === 14;
   };
 
-  const handleSubmit = async () => {
-    if (!isOnline) {
-      setConnectionError(true);
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     // Validação final antes de salvar
     const requiredFields = ['nomeFantasia', 'documento', 'telefone'];
@@ -144,23 +133,16 @@ export function ClienteModal({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      try {
-        await onSave(formData);
-        setConnectionError(false);
-      } catch (error) {
-        setConnectionError(true);
-      }
+      await onSave({
+        ...formData,
+        pendingSync: !isOnline || formData.pendingSync, // Mantém como pendente se offline
+      });
     }
   };
 
   const handleCepBlur = async () => {
-    if (!isOnline) {
-      setConnectionError(true);
-      return;
-    }
-
     const cep = formData.endereco.cep?.replace(/\D/g, '');
-    if (cep && cep.length === 8) {
+    if (cep && cep.length === 8 && isOnline) {
       try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
@@ -177,11 +159,9 @@ export function ClienteModal({
               complemento: data.complemento || '',
             },
           }));
-          setConnectionError(false);
         }
       } catch (error) {
         console.error('Erro ao buscar CEP:', error);
-        setConnectionError(true);
       }
     }
   };
@@ -199,24 +179,18 @@ export function ClienteModal({
                 ? 'Editar Cliente'
                 : 'Detalhes do Cliente'}
           </h2>
+          {!isOnline && (
+            <span className={styles.offlineBadge}>
+              <FiWifiOff /> Offline
+            </span>
+          )}
           <button onClick={onClose} className={styles.closeButton} aria-label="Fechar">
             <FiX />
           </button>
         </div>
 
-        {connectionError && (
-          <div className={styles.connectionError}>
-            <p>Erro de conexão. Verifique sua conexão com a internet.</p>
-          </div>
-        )}
-
         <div className={styles.modalBody}>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-          >
+          <form onSubmit={handleSubmit}>
             {/* Identificação */}
             <fieldset className={styles.fieldset}>
               <legend>Identificação</legend>
@@ -228,7 +202,7 @@ export function ClienteModal({
                     name="tipo"
                     value={formData.tipo}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                   >
                     <option value="petshop">Petshop</option>
                     <option value="mercadinho">Mercadinho</option>
@@ -244,7 +218,7 @@ export function ClienteModal({
                     name="nomeFantasia"
                     value={formData.nomeFantasia}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                     placeholder="Nome do estabelecimento"
                     className={errors.nomeFantasia ? styles.errorInput : ''}
                   />
@@ -263,7 +237,7 @@ export function ClienteModal({
                     name="razaoSocial"
                     value={formData.razaoSocial}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                     placeholder="Razão Social"
                   />
                 </div>
@@ -275,7 +249,7 @@ export function ClienteModal({
                     name="documento"
                     value={formData.documento}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                     placeholder="00.000.000/0000-00 ou 000.000.000-00"
                     className={errors.documento ? styles.errorInput : ''}
                   />
@@ -298,7 +272,7 @@ export function ClienteModal({
                     name="responsavel"
                     value={formData.responsavel}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                     placeholder="Nome do responsável"
                   />
                 </div>
@@ -310,7 +284,7 @@ export function ClienteModal({
                     name="telefone"
                     value={formData.telefone}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                     placeholder="(00) 00000-0000"
                     className={errors.telefone ? styles.errorInput : ''}
                   />
@@ -326,7 +300,7 @@ export function ClienteModal({
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                     placeholder="contato@email.com"
                     className={errors.email ? styles.errorInput : ''}
                   />
@@ -347,7 +321,7 @@ export function ClienteModal({
                   value={formData.endereco.cep || ''}
                   onChange={handleChange}
                   onBlur={handleCepBlur}
-                  disabled={mode === 'view' || !isOnline}
+                  disabled={mode === 'view'}
                   placeholder="00000-000"
                 />
               </div>
@@ -361,7 +335,7 @@ export function ClienteModal({
                     name="endereco.logradouro"
                     value={formData.endereco.logradouro || ''}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                   />
                 </div>
                 <div className={styles.formGroup}>
@@ -372,7 +346,7 @@ export function ClienteModal({
                     name="endereco.numero"
                     value={formData.endereco.numero || ''}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                   />
                 </div>
               </div>
@@ -386,7 +360,7 @@ export function ClienteModal({
                     name="endereco.bairro"
                     value={formData.endereco.bairro || ''}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                   />
                 </div>
                 <div className={styles.formGroup}>
@@ -397,7 +371,7 @@ export function ClienteModal({
                     name="endereco.localidade"
                     value={formData.endereco.localidade || ''}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                   />
                 </div>
                 <div className={styles.formGroup}>
@@ -408,7 +382,7 @@ export function ClienteModal({
                     name="endereco.uf"
                     value={formData.endereco.uf || ''}
                     onChange={handleChange}
-                    disabled={mode === 'view' || !isOnline}
+                    disabled={mode === 'view'}
                     maxLength={2}
                   />
                 </div>
@@ -424,7 +398,7 @@ export function ClienteModal({
                 name="observacoes"
                 value={formData.observacoes || ''}
                 onChange={handleChange}
-                disabled={mode === 'view' || !isOnline}
+                disabled={mode === 'view'}
                 placeholder="Alguma informação adicional..."
               />
             </div>
@@ -435,7 +409,6 @@ export function ClienteModal({
                   type="button"
                   onClick={() => onSave({ ...formData })}
                   className={styles.editButton}
-                  disabled={!isOnline}
                 >
                   Editar
                 </button>
@@ -444,7 +417,6 @@ export function ClienteModal({
                     type="button"
                     onClick={() => onDelete(formData.id)}
                     className={styles.deleteButton}
-                    disabled={!isOnline}
                   >
                     Excluir
                   </button>
@@ -455,9 +427,9 @@ export function ClienteModal({
                 <button
                   type="submit"
                   className={styles.saveButton}
-                  disabled={!isFormValid || loading || !isOnline}
+                  disabled={!isFormValid || loading}
                 >
-                  {loading ? 'Salvando...' : 'Salvar'}
+                  {loading ? 'Salvando...' : isOnline ? 'Salvar' : 'Salvar Localmente'}
                 </button>
                 <button
                   type="button"

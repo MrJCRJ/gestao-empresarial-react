@@ -134,21 +134,18 @@ export default function FormCliente() {
 
   const handleSaveCliente = async (cliente: Cliente) => {
     try {
-      const result = await offlineManager.saveCliente(
-        cliente,
-        isOnline && backendStatus === 'online',
-      );
+      const result = await offlineManager.saveCliente(cliente);
 
-      if (result.success) {
-        await loadClientes();
-        setModalState({ open: false, mode: 'view', cliente: null });
-        setSyncMessage(
-          result.backendError
-            ? 'Salvo localmente (sincronização pendente)'
-            : 'Cliente salvo com sucesso!',
-        );
-        setTimeout(() => setSyncMessage(null), 3000);
+      await loadClientes();
+      setModalState({ open: false, mode: 'view', cliente: null });
+
+      if (result.isOffline) {
+        setSyncMessage('Salvo localmente (sincronização pendente)');
+      } else {
+        setSyncMessage('Cliente salvo com sucesso!');
       }
+
+      setTimeout(() => setSyncMessage(null), 3000);
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
       setSyncMessage('Erro ao salvar cliente');
