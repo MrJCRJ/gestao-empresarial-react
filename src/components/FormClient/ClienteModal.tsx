@@ -1,4 +1,4 @@
-import { FiX, FiWifiOff } from 'react-icons/fi';
+import { FiX } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 import styles from './ClienteModal.module.css';
 import { Cliente } from './types';
@@ -45,7 +45,6 @@ type ClienteModalProps = {
   onSave: (cliente: Cliente) => void;
   onDelete?: (id: string) => void;
   loading?: boolean;
-  isOnline?: boolean;
 };
 
 export function ClienteModal({
@@ -55,7 +54,6 @@ export function ClienteModal({
   onSave,
   onDelete,
   loading = false,
-  isOnline = true,
 }: ClienteModalProps) {
   const [formData, setFormData] = useState<Cliente>(cliente);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -133,16 +131,13 @@ export function ClienteModal({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      await onSave({
-        ...formData,
-        pendingSync: !isOnline || formData.pendingSync, // Mantém como pendente se offline
-      });
+      await onSave(formData);
     }
   };
 
   const handleCepBlur = async () => {
     const cep = formData.endereco.cep?.replace(/\D/g, '');
-    if (cep && cep.length === 8 && isOnline) {
+    if (cep && cep.length === 8) {
       try {
         const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
         const data = await response.json();
@@ -179,11 +174,6 @@ export function ClienteModal({
                 ? 'Editar Cliente'
                 : 'Detalhes do Cliente'}
           </h2>
-          {!isOnline && (
-            <span className={styles.offlineBadge}>
-              <FiWifiOff /> Offline
-            </span>
-          )}
           <button onClick={onClose} className={styles.closeButton} aria-label="Fechar">
             <FiX />
           </button>
@@ -429,7 +419,7 @@ export function ClienteModal({
                   className={styles.saveButton}
                   disabled={!isFormValid || loading}
                 >
-                  {loading ? 'Salvando...' : isOnline ? 'Salvar' : 'Salvar Localmente'}
+                  {loading ? 'Salvando...' : 'Salvar'}
                 </button>
                 <button
                   type="button"

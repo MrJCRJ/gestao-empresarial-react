@@ -1,4 +1,4 @@
-import { FiPlus, FiEdit2, FiTrash2, FiUser, FiRefreshCw, FiWifiOff } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiUser, FiRefreshCw } from 'react-icons/fi';
 import styles from './ClientesList.module.css';
 import { Cliente } from './types';
 
@@ -9,7 +9,6 @@ type ClientesListProps = {
   onView: (cliente: Cliente) => void;
   onDelete: (id: string) => void;
   onRefresh?: () => void;
-  pendingSyncCount: number;
   isOnline: boolean;
   isLoading?: boolean;
 };
@@ -21,7 +20,6 @@ export function ClientesList({
   onView,
   onDelete,
   onRefresh,
-  pendingSyncCount,
   isOnline,
   isLoading = false,
 }: ClientesListProps) {
@@ -34,15 +32,6 @@ export function ClientesList({
         </div>
 
         <div className={styles.headerActions}>
-          {pendingSyncCount > 0 && (
-            <div className={`${styles.syncBadge} ${!isOnline ? styles.offline : ''}`}>
-              <FiWifiOff className={!isOnline ? styles.offlineIcon : ''} />
-              <span>
-                {pendingSyncCount} pendente{pendingSyncCount !== 1 ? 's' : ''}
-              </span>
-            </div>
-          )}
-
           {onRefresh && (
             <button
               onClick={onRefresh}
@@ -71,11 +60,7 @@ export function ClientesList({
       ) : (
         <div className={styles.clientesGrid}>
           {clientes.map((cliente) => (
-            <div
-              key={cliente.id}
-              className={`${styles.clienteCard} ${cliente.pendingSync ? styles.pending : ''}`}
-              onClick={() => onView(cliente)}
-            >
+            <div key={cliente.id} className={styles.clienteCard} onClick={() => onView(cliente)}>
               <div className={styles.cardHeader}>
                 <div className={styles.avatar}>
                   <FiUser className={styles.userIcon} />
@@ -84,11 +69,6 @@ export function ClientesList({
                   <h3>{cliente.nomeFantasia || cliente.razaoSocial}</h3>
                   <p className={styles.documento}>{cliente.documento}</p>
                 </div>
-                {cliente.pendingSync && (
-                  <span className={styles.syncIndicator}>
-                    <FiRefreshCw /> Pendente
-                  </span>
-                )}
               </div>
 
               <div className={styles.cardContent}>

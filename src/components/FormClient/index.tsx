@@ -2,19 +2,18 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { FiWifi, FiWifiOff, FiAlertTriangle, FiRefreshCw, FiCheckCircle } from 'react-icons/fi';
 import { ClientesList } from './ClientesList';
 import { ClienteModal } from './ClienteModal';
-import { offlineManager } from '../../services/offlineManager';
+import { apiManager } from '../../services/apiManager';
 import styles from './FormCliente.module.css';
 import { Cliente } from './types';
 
-type BackendStatus = 'online' | 'offline' | 'error' | 'checking' | 'syncing';
+type BackendStatus = 'online' | 'offline' | 'error' | 'checking';
 
 export default function FormCliente() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [backendStatus, setBackendStatus] = useState<BackendStatus>('checking');
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
-  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [modalState, setModalState] = useState<{
     open: boolean;
@@ -45,15 +44,12 @@ export default function FormCliente() {
       numero: '',
     },
     observacoes: '',
-    pendingSync: true,
   };
 
   // Verifica status do backend
-  // Adicione no início do componente
   const lastCheckRef = useRef<number>(0);
   const CHECK_INTERVAL = 5000; // 5 segundos entre verificações
 
-  // Modifique a função checkBackendStatus
   const checkBackendStatus = useCallback(async () => {
     const now = Date.now();
     if (now - lastCheckRef.current < CHECK_INTERVAL) {
@@ -64,7 +60,7 @@ export default function FormCliente() {
 
     try {
       setBackendStatus('checking');
-      const isAlive = await offlineManager.checkBackendStatus();
+      const isAlive = await apiManager.checkBackendStatus();
       setBackendStatus(isAlive ? 'online' : 'error');
       return isAlive;
     } catch (error) {
@@ -73,90 +69,44 @@ export default function FormCliente() {
     }
   }, [backendStatus]);
 
-  // Carrega clientes do IndexedDB
-  const [isLoading, setIsLoading] = useState(false);
-
+  // Carrega clientes da API
   const loadClientes = useCallback(async () => {
     setIsLoading(true);
     try {
-      const clientes = await offlineManager.getClientes();
+      const clientes = await apiManager.getClientes();
       setClientes(clientes);
-      const pendingCount = clientes.filter((c) => c.pendingSync).length;
-      setPendingSyncCount(pendingCount);
-      setSyncMessage('Clientes carregados com sucesso');
+      setMessage('Clientes carregados com sucesso');
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
-      setSyncMessage('Erro ao carregar clientes');
+      setMessage('Erro ao carregar clientes');
     } finally {
       setIsLoading(false);
-      setTimeout(() => setSyncMessage(null), 3000);
+      setTimeout(() => setMessage(null), 3000);
     }
   }, []);
 
-  // Sincroniza alterações pendentes
-  const syncPendingChanges = useCallback(async () => {
-    if (backendStatus !== 'online') return;
-
-    try {
-      setBackendStatus('syncing');
-      setSyncMessage('Sincronizando alterações...');
-
-      const result = await offlineManager.syncQueue();
-
-      if (result.success) {
-        setSyncMessage('Alterações sincronizadas com sucesso!');
-        setLastSyncTime(new Date());
-        await loadClientes(); // Recarrega os clientes após sincronização
-      } else {
-        const errorMsg = result.errors?.[0] || 'Erro ao sincronizar';
-        setSyncMessage(`Erro: ${errorMsg}`);
-      }
-    } catch (error) {
-      console.error('Erro na sincronização:', error);
-      setSyncMessage('Falha na comunicação com o servidor');
-    } finally {
-      setBackendStatus('online');
-      setTimeout(() => setSyncMessage(null), 5000);
-    }
-  }, [backendStatus, loadClientes]);
-
   // Efeitos para monitorar conexão e carregar dados
   useEffect(() => {
-    let syncInterval: number;
-
     const init = async () => {
       await checkBackendStatus();
-      await loadClientes(); // Carrega os clientes na inicialização
-
-      // Sincroniza a cada 30 segundos se estiver online
-      syncInterval = window.setInterval(() => {
-        if (isOnline && backendStatus === 'online') {
-          syncPendingChanges();
-        }
-      }, 30000);
+      await loadClientes();
     };
 
     init();
 
     const handleOnline = () => {
       setIsOnline(true);
-      // Adiciona delay para evitar flood
-      setTimeout(() => {
-        checkBackendStatus().then((isAlive) => {
-          if (isAlive) syncPendingChanges();
-        });
-      }, 2000);
+      setTimeout(() => checkBackendStatus(), 2000);
     };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', () => setIsOnline(false));
 
     return () => {
-      window.clearInterval(syncInterval);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', () => setIsOnline(false));
     };
-  }, [checkBackendStatus, loadClientes, syncPendingChanges, isOnline, backendStatus]);
+  }, [checkBackendStatus, loadClientes]);
 
   // Manipuladores de eventos
   const handleOpenModal = (mode: 'create' | 'edit' | 'view', cliente?: Cliente) => {
@@ -169,34 +119,31 @@ export default function FormCliente() {
 
   const handleSaveCliente = async (cliente: Cliente) => {
     try {
-      const result = await offlineManager.saveCliente(cliente);
-
-      await loadClientes();
-      setModalState({ open: false, mode: 'view', cliente: null });
-
-      if (result.isOffline) {
-        setSyncMessage('Salvo localmente (sincronização pendente)');
-      } else {
-        setSyncMessage('Cliente salvo com sucesso!');
+      const result = await apiManager.saveCliente(cliente);
+      if (result.success) {
+        await loadClientes();
+        setModalState({ open: false, mode: 'view', cliente: null });
+        setMessage('Cliente salvo com sucesso!');
+        setTimeout(() => setMessage(null), 3000);
       }
-
-      setTimeout(() => setSyncMessage(null), 3000);
     } catch (error) {
       console.error('Erro ao salvar cliente:', error);
-      setSyncMessage('Erro ao salvar cliente');
+      setMessage('Erro ao salvar cliente');
     }
   };
 
   const handleDeleteCliente = async (id: string) => {
     try {
-      await offlineManager.deleteCliente(id);
-      await loadClientes();
-      setModalState({ open: false, mode: 'view', cliente: null });
-      setSyncMessage('Cliente removido com sucesso!');
-      setTimeout(() => setSyncMessage(null), 3000);
+      const result = await apiManager.deleteCliente(id);
+      if (result.success) {
+        await loadClientes();
+        setModalState({ open: false, mode: 'view', cliente: null });
+        setMessage('Cliente removido com sucesso!');
+        setTimeout(() => setMessage(null), 3000);
+      }
     } catch (error) {
       console.error('Erro ao deletar cliente:', error);
-      setSyncMessage('Erro ao remover cliente');
+      setMessage('Erro ao remover cliente');
     }
   };
 
@@ -211,27 +158,9 @@ export default function FormCliente() {
       online: { icon: <FiWifi />, text: 'Online', className: styles.statusOnline },
       error: { icon: <FiAlertTriangle />, text: 'Erro no servidor', className: styles.statusError },
       offline: { icon: <FiWifiOff />, text: 'Offline', className: styles.statusOffline },
-      syncing: {
-        icon: <div className={styles.spinner} />,
-        text: 'Sincronizando...',
-        className: styles.statusSyncing,
-      },
     };
 
     const status = statusMap[backendStatus];
-
-    const [isSyncing, setIsSyncing] = useState(false);
-
-    const debouncedSync = useCallback(async () => {
-      if (isSyncing) return;
-
-      setIsSyncing(true);
-      try {
-        await syncPendingChanges();
-      } finally {
-        setTimeout(() => setIsSyncing(false), 1000); // Previne múltiplos cliques
-      }
-    }, [isSyncing, syncPendingChanges]);
 
     return (
       <div className={`${styles.statusBar} ${status.className}`}>
@@ -243,20 +172,10 @@ export default function FormCliente() {
               <FiRefreshCw /> Tentar novamente
             </button>
           )}
-          {pendingSyncCount > 0 && backendStatus === 'online' && (
-            <button onClick={debouncedSync} className={styles.syncButton} disabled={isSyncing}>
-              <FiRefreshCw /> {isSyncing ? 'Sincronizando...' : `Sincronizar (${pendingSyncCount})`}
-            </button>
-          )}
-          {lastSyncTime && (
-            <span className={styles.lastSync}>
-              Última sincronização: {lastSyncTime.toLocaleTimeString()}
-            </span>
-          )}
         </div>
-        {syncMessage && (
+        {message && (
           <div className={styles.syncMessage}>
-            <FiCheckCircle /> {syncMessage}
+            <FiCheckCircle /> {message}
           </div>
         )}
       </div>
@@ -273,8 +192,7 @@ export default function FormCliente() {
         onEdit={(cliente) => handleOpenModal('edit', cliente)}
         onView={(cliente) => handleOpenModal('view', cliente)}
         onDelete={handleDeleteCliente}
-        onRefresh={loadClientes} // Adiciona a prop onRefresh
-        pendingSyncCount={pendingSyncCount}
+        onRefresh={loadClientes}
         isOnline={isOnline && backendStatus === 'online'}
         isLoading={isLoading}
       />
@@ -286,7 +204,6 @@ export default function FormCliente() {
           onClose={() => setModalState({ ...modalState, open: false })}
           onSave={handleSaveCliente}
           onDelete={modalState.mode === 'view' ? handleDeleteCliente : undefined}
-          isOnline={isOnline && backendStatus === 'online'}
         />
       )}
     </div>
