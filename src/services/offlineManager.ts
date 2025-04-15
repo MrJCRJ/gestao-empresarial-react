@@ -6,7 +6,7 @@ interface SyncResult {
 }
 
 class OfflineManager {
-  private backendUrl = 'https://seuservidor.com/api';
+  private backendUrl = 'http://localhost:5001';
   private dbName = 'HeroPetDB';
   private dbVersion = 1;
   private db: IDBDatabase | null = null;
@@ -52,28 +52,33 @@ class OfflineManager {
   }
 
   // Verifica status do backend (com timeout)
+  private lastHealthCheck = 0;
+  private readonly HEALTH_CHECK_INTERVAL = 5000; // 5 segundos
+
   public async checkBackendStatus(): Promise<boolean> {
+    const now = Date.now();
+    if (now - this.lastHealthCheck < this.HEALTH_CHECK_INTERVAL) {
+      return this.isBackendAlive;
+    }
+
+    this.lastHealthCheck = now;
+
     if (!this.isOnline) {
       this.isBackendAlive = false;
       return false;
     }
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-
       const response = await fetch(`${this.backendUrl}/health`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
       });
 
-      clearTimeout(timeoutId);
-      this.isBackendAlive = response.ok;
-      return response.ok;
+      const data = await response.json();
+      this.isBackendAlive = response.ok && data.status === 'healthy';
+      return this.isBackendAlive;
     } catch (error) {
       this.isBackendAlive = false;
-      console.error('Erro ao verificar backend:', error);
       return false;
     }
   }
@@ -81,10 +86,13 @@ class OfflineManager {
   private setupListeners() {
     window.addEventListener('online', async () => {
       this.isOnline = true;
-      await this.checkBackendStatus();
-      if (this.isBackendAlive) {
-        await this.syncQueue();
-      }
+      // Aguarda 2 segundos antes de verificar para evitar flood
+      setTimeout(async () => {
+        await this.checkBackendStatus();
+        if (this.isBackendAlive) {
+          await this.syncQueue();
+        }
+      }, 2000);
     });
 
     window.addEventListener('offline', () => {
@@ -140,37 +148,34 @@ class OfflineManager {
       const clientesStore = transaction.objectStore('clientes');
       const syncStore = transaction.objectStore('syncQueue');
 
-      // Garante que o cliente tem um ID
-      if (!cliente.id) {
-        cliente.id = `temp_${Date.now()}`;
+      // Cria uma cópia do cliente omitindo o id se for temporário
+      const clienteParaSalvar: Omit<Cliente, 'id'> & { id?: string } = { ...cliente };
+
+      if (clienteParaSalvar.id?.startsWith('temp_')) {
+        delete clienteParaSalvar.id;
       }
 
-      // Marca como pendente de sincronização
-      cliente.pendingSync = true;
+      // Garante um ID local
+      if (!clienteParaSalvar.id) {
+        clienteParaSalvar.id = `local_${Date.now()}`;
+      }
 
-      // Salva nos clientes locais
-      const clienteRequest = clientesStore.put(cliente);
+      clienteParaSalvar.pendingSync = true;
 
-      // Adiciona à fila de sincronização
+      const clienteRequest = clientesStore.put(clienteParaSalvar);
+
       const syncRequest = syncStore.add({
         type: 'cliente',
         action: 'save',
-        data: cliente,
+        data: clienteParaSalvar,
         timestamp: new Date().toISOString(),
       });
 
       clienteRequest.onsuccess = () => {
-        syncRequest.onsuccess = () => {
-          resolve({ success: true, isOffline: true });
-        };
-        syncRequest.onerror = () => {
-          resolve({ success: false, isOffline: true });
-        };
+        syncRequest.onsuccess = () => resolve({ success: true, isOffline: true });
+        syncRequest.onerror = () => resolve({ success: false, isOffline: true });
       };
-
-      clienteRequest.onerror = () => {
-        resolve({ success: false, isOffline: true });
-      };
+      clienteRequest.onerror = () => resolve({ success: false, isOffline: true });
     });
   }
 
@@ -261,62 +266,125 @@ class OfflineManager {
 
   // Sincroniza a fila de operações pendentes
   public async syncQueue(): Promise<SyncResult> {
-    if (!this.db || !this.isOnline || !this.isBackendAlive) {
+    if (!this.db) {
+      console.error('Banco de dados não está inicializado');
+      return { success: false, errors: ['Banco de dados não inicializado'] };
+    }
+
+    if (!this.isOnline || !this.isBackendAlive) {
+      console.log('Não sincronizando - offline ou backend indisponível');
       return { success: false, errors: ['Não está online ou backend indisponível'] };
     }
 
-    const transaction = this.db.transaction(['syncQueue', 'clientes'], 'readwrite');
-    const queueStore = transaction.objectStore('syncQueue');
-    const clientesStore = transaction.objectStore('clientes');
+    console.log('Iniciando processo de sincronização');
+
+    // Primeiro obtemos todos os itens pendentes em uma transação separada
     const items = await new Promise<any[]>((resolve) => {
+      const transaction = this.db!.transaction(['syncQueue'], 'readonly');
+      const queueStore = transaction.objectStore('syncQueue');
       const request = queueStore.getAll();
-      request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => resolve([]);
+
+      request.onsuccess = () => {
+        console.log(`Encontrados ${request.result?.length || 0} itens para sincronizar`);
+        resolve(request.result || []);
+      };
+      request.onerror = () => {
+        console.error('Erro ao obter itens da fila de sincronização');
+        resolve([]);
+      };
     });
 
-    const errors: any[] = [];
+    if (items.length === 0) {
+      console.log('Nada para sincronizar - fila vazia');
+      return { success: true };
+    }
 
-    for (const item of items) {
-      try {
-        // Tenta sincronizar com o backend
-        const success = await this.syncWithRealBackend(
-          item.data,
-          item.action === 'delete' ? 'clientes/delete' : 'clientes',
-        );
+    console.log('Preparando dados para envio:', JSON.stringify(items, null, 2));
 
-        if (success) {
-          // Se for delete, remove do banco local também
-          if (item.action === 'delete') {
-            await new Promise((resolve) => {
-              const deleteRequest = clientesStore.delete(item.data.id);
-              deleteRequest.onsuccess = () => resolve(true);
-              deleteRequest.onerror = () => resolve(false);
-            });
+    try {
+      // Fazemos a requisição para o backend
+      const response = await fetch(`${this.backendUrl}/clientes/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientes: items.map((item) => {
+            const data = { ...item.data };
+            if (data.id?.startsWith('temp_') || data.id?.startsWith('local_')) {
+              delete data.id;
+            }
+            return {
+              ...data,
+              action: item.action || 'save',
+            };
+          }),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Erro na resposta do servidor: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Resposta da sincronização:', JSON.stringify(result, null, 2));
+
+      if (!result.success) {
+        console.error('Erros na sincronização:', result.errors);
+        return { success: false, errors: result.errors };
+      }
+
+      // Agora criamos uma NOVA transação apenas para as exclusões
+      await new Promise<void>((resolve, reject) => {
+        const deleteTransaction = this.db!.transaction(['syncQueue', 'clientes'], 'readwrite');
+        const queueStore = deleteTransaction.objectStore('syncQueue');
+        const clientesStore = deleteTransaction.objectStore('clientes');
+
+        // Para cada item sincronizado com sucesso
+        items.forEach((item) => {
+          if (item.action === 'save') {
+            // Atualiza o cliente local removendo a flag pendingSync
+            const updateRequest = clientesStore.get(item.data.id);
+            updateRequest.onsuccess = () => {
+              const cliente = updateRequest.result;
+              if (cliente) {
+                cliente.pendingSync = false;
+                clientesStore.put(cliente);
+              }
+            };
           }
 
           // Remove da fila de sincronização
-          await new Promise((resolve) => {
-            const deleteRequest = queueStore.delete(item.id);
-            deleteRequest.onsuccess = () => resolve(true);
-            deleteRequest.onerror = () => resolve(false);
-          });
-        } else {
-          throw new Error('Falha na sincronização com o backend');
-        }
-      } catch (error) {
-        errors.push({ id: item.id, error });
-        console.error('Erro ao sincronizar item:', item, error);
-      }
-    }
+          const deleteRequest = queueStore.delete(item.id);
+          deleteRequest.onerror = () => {
+            console.error(`Erro ao remover item ${item.id} da fila`);
+          };
+        });
 
-    return {
-      success: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined,
-    };
+        deleteTransaction.oncomplete = () => {
+          console.log('Todos os itens foram processados');
+          resolve();
+        };
+
+        deleteTransaction.onerror = () => {
+          console.error('Erro na transação de exclusão');
+          reject(deleteTransaction.error);
+        };
+      });
+
+      console.log('Sincronização concluída com sucesso');
+      return { success: true };
+    } catch (error) {
+      console.error('Erro durante a sincronização:', error);
+      return {
+        success: false,
+        errors: [error instanceof Error ? error.message : 'Erro desconhecido'],
+      };
+    }
   }
 
   // Método privado para sincronizar com o backend real
-  private async syncWithRealBackend(data: any, endpoint: string): Promise<boolean> {
+  public async syncWithRealBackend(data: any, endpoint: string): Promise<boolean> {
     try {
       const response = await fetch(`${this.backendUrl}/${endpoint}`, {
         method: 'POST',

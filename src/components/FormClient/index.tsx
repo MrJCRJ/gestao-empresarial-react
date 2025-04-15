@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { FiWifi, FiWifiOff, FiAlertTriangle, FiRefreshCw, FiCheckCircle } from 'react-icons/fi';
 import { ClientesList } from './ClientesList';
 import { ClienteModal } from './ClienteModal';
@@ -49,7 +49,19 @@ export default function FormCliente() {
   };
 
   // Verifica status do backend
+  // Adicione no início do componente
+  const lastCheckRef = useRef<number>(0);
+  const CHECK_INTERVAL = 5000; // 5 segundos entre verificações
+
+  // Modifique a função checkBackendStatus
   const checkBackendStatus = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastCheckRef.current < CHECK_INTERVAL) {
+      return backendStatus === 'online';
+    }
+
+    lastCheckRef.current = now;
+
     try {
       setBackendStatus('checking');
       const isAlive = await offlineManager.checkBackendStatus();
@@ -59,7 +71,7 @@ export default function FormCliente() {
       setBackendStatus('error');
       return false;
     }
-  }, []);
+  }, [backendStatus]);
 
   // Carrega clientes do IndexedDB
   const loadClientes = useCallback(async () => {
@@ -79,49 +91,64 @@ export default function FormCliente() {
 
     try {
       setBackendStatus('syncing');
+      setSyncMessage('Sincronizando alterações...');
+
       const result = await offlineManager.syncQueue();
 
       if (result.success) {
         setSyncMessage('Alterações sincronizadas com sucesso!');
         setLastSyncTime(new Date());
+        await loadClientes(); // Recarrega os clientes após sincronização
       } else {
-        setSyncMessage('Erro ao sincronizar algumas alterações');
+        const errorMsg = result.errors?.[0] || 'Erro ao sincronizar';
+        setSyncMessage(`Erro: ${errorMsg}`);
       }
-
-      await loadClientes();
-      setBackendStatus('online');
-      setTimeout(() => setSyncMessage(null), 3000);
     } catch (error) {
       console.error('Erro na sincronização:', error);
-      setBackendStatus('error');
-      setSyncMessage('Falha na sincronização');
+      setSyncMessage('Falha na comunicação com o servidor');
+    } finally {
+      setBackendStatus('online');
+      setTimeout(() => setSyncMessage(null), 5000);
     }
   }, [backendStatus, loadClientes]);
 
   // Efeitos para monitorar conexão e carregar dados
   useEffect(() => {
+    let syncInterval: number;
+
     const init = async () => {
       await checkBackendStatus();
       await loadClientes();
+
+      // Configura intervalo apenas para sincronização
+      syncInterval = window.setInterval(() => {
+        if (isOnline && backendStatus === 'online') {
+          syncPendingChanges();
+        }
+      }, 30000); // 30 segundos
     };
 
     init();
 
     const handleOnline = () => {
       setIsOnline(true);
-      checkBackendStatus().then((isAlive) => {
-        if (isAlive) syncPendingChanges();
-      });
+      // Adiciona delay para evitar flood
+      setTimeout(() => {
+        checkBackendStatus().then((isAlive) => {
+          if (isAlive) syncPendingChanges();
+        });
+      }, 2000);
     };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', () => setIsOnline(false));
 
     return () => {
+      window.clearInterval(syncInterval);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', () => setIsOnline(false));
     };
-  }, [checkBackendStatus, loadClientes, syncPendingChanges]);
+  }, [checkBackendStatus, loadClientes, syncPendingChanges, isOnline, backendStatus]);
 
   // Manipuladores de eventos
   const handleOpenModal = (mode: 'create' | 'edit' | 'view', cliente?: Cliente) => {
@@ -185,6 +212,19 @@ export default function FormCliente() {
 
     const status = statusMap[backendStatus];
 
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const debouncedSync = useCallback(async () => {
+      if (isSyncing) return;
+
+      setIsSyncing(true);
+      try {
+        await syncPendingChanges();
+      } finally {
+        setTimeout(() => setIsSyncing(false), 1000); // Previne múltiplos cliques
+      }
+    }, [isSyncing, syncPendingChanges]);
+
     return (
       <div className={`${styles.statusBar} ${status.className}`}>
         <div className={styles.statusContent}>
@@ -196,8 +236,8 @@ export default function FormCliente() {
             </button>
           )}
           {pendingSyncCount > 0 && backendStatus === 'online' && (
-            <button onClick={syncPendingChanges} className={styles.syncButton}>
-              <FiRefreshCw /> Sincronizar ({pendingSyncCount})
+            <button onClick={debouncedSync} className={styles.syncButton} disabled={isSyncing}>
+              <FiRefreshCw /> {isSyncing ? 'Sincronizando...' : `Sincronizar (${pendingSyncCount})`}
             </button>
           )}
           {lastSyncTime && (

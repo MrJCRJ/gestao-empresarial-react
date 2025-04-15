@@ -1,29 +1,32 @@
 // src/components/FormCliente/types.ts
 export type ClienteTab = 'lista' | 'detalhes';
 
-export type EnderecoType = {
-  cep: string; // Adicionei o cep aqui
+export interface EnderecoType {
+  cep: string;
   logradouro: string;
   bairro: string;
   localidade: string;
   uf: string;
   numero: string;
-  complemento?: string; // Adicionei como opcional
-};
+  complemento?: string;
+}
 
 export interface Cliente {
   id: string;
-  tipo: string;
+  _id?: string; // Para compatibilidade com MongoDB
+  tipo: 'petshop' | 'mercadinho' | 'clínica' | 'outro';
   nomeFantasia: string;
-  razaoSocial: string;
+  razaoSocial?: string;
   documento: string;
-  responsavel: string;
+  responsavel?: string;
   telefone: string;
-  email: string;
-  endereco: EnderecoType; // Removi o cep daqui já que está no EnderecoType
-  observacoes: string;
+  email?: string;
+  endereco: EnderecoType;
+  observacoes?: string;
   version?: number;
   pendingSync?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export type PedidoType = {
