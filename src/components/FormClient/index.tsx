@@ -74,14 +74,22 @@ export default function FormCliente() {
   }, [backendStatus]);
 
   // Carrega clientes do IndexedDB
+  const [isLoading, setIsLoading] = useState(false);
+
   const loadClientes = useCallback(async () => {
+    setIsLoading(true);
     try {
       const clientes = await offlineManager.getClientes();
       setClientes(clientes);
       const pendingCount = clientes.filter((c) => c.pendingSync).length;
       setPendingSyncCount(pendingCount);
+      setSyncMessage('Clientes carregados com sucesso');
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
+      setSyncMessage('Erro ao carregar clientes');
+    } finally {
+      setIsLoading(false);
+      setTimeout(() => setSyncMessage(null), 3000);
     }
   }, []);
 
@@ -118,14 +126,14 @@ export default function FormCliente() {
 
     const init = async () => {
       await checkBackendStatus();
-      await loadClientes();
+      await loadClientes(); // Carrega os clientes na inicialização
 
-      // Configura intervalo apenas para sincronização
+      // Sincroniza a cada 30 segundos se estiver online
       syncInterval = window.setInterval(() => {
         if (isOnline && backendStatus === 'online') {
           syncPendingChanges();
         }
-      }, 30000); // 30 segundos
+      }, 30000);
     };
 
     init();
@@ -265,8 +273,10 @@ export default function FormCliente() {
         onEdit={(cliente) => handleOpenModal('edit', cliente)}
         onView={(cliente) => handleOpenModal('view', cliente)}
         onDelete={handleDeleteCliente}
+        onRefresh={loadClientes} // Adiciona a prop onRefresh
         pendingSyncCount={pendingSyncCount}
         isOnline={isOnline && backendStatus === 'online'}
+        isLoading={isLoading}
       />
 
       {modalState.open && modalState.cliente && (

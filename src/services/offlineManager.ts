@@ -242,6 +242,31 @@ class OfflineManager {
 
   // Obtém todos os clientes (sempre do banco local)
   public async getClientes(): Promise<Cliente[]> {
+    try {
+      // Primeiro tenta buscar do backend se estiver online
+      if (this.isOnline && this.isBackendAlive) {
+        try {
+          const response = await fetch(`${this.backendUrl}/clientes`);
+          if (response.ok) {
+            const clientes = await response.json();
+            // Salva os clientes no IndexedDB
+            await this.saveClientesLocally(clientes);
+            return clientes;
+          }
+        } catch (error) {
+          console.error('Falha ao buscar clientes do backend:', error);
+        }
+      }
+
+      // Se offline ou falha no backend, busca do IndexedDB
+      return this.getClientesFromIndexedDB();
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error);
+      return [];
+    }
+  }
+
+  private async getClientesFromIndexedDB(): Promise<Cliente[]> {
     if (!this.db) return [];
 
     return new Promise((resolve) => {
@@ -251,7 +276,6 @@ class OfflineManager {
 
       request.onsuccess = () => {
         const clientes = (request.result || []).sort((a, b) => {
-          // Ordena por pendingSync (pendentes primeiro) e depois por nome
           if (a.pendingSync && !b.pendingSync) return -1;
           if (!a.pendingSync && b.pendingSync) return 1;
           return a.nomeFantasia?.localeCompare(b.nomeFantasia) || 0;
@@ -262,6 +286,33 @@ class OfflineManager {
       request.onerror = () => {
         resolve([]);
       };
+    });
+  }
+
+  private async saveClientesLocally(clientes: Cliente[]): Promise<void> {
+    if (!this.db) return;
+
+    return new Promise((resolve) => {
+      const transaction = this.db!.transaction(['clientes'], 'readwrite');
+      const store = transaction.objectStore('clientes');
+
+      // Limpa os clientes existentes
+      const clearRequest = store.clear();
+
+      clearRequest.onsuccess = () => {
+        // Adiciona os novos clientes
+        const requests = clientes.map((cliente) => {
+          return new Promise<void>((resolveItem) => {
+            const putRequest = store.put(cliente);
+            putRequest.onsuccess = () => resolveItem();
+            putRequest.onerror = () => resolveItem();
+          });
+        });
+
+        Promise.all(requests).then(() => resolve());
+      };
+
+      clearRequest.onerror = () => resolve();
     });
   }
 
