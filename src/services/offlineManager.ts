@@ -2,7 +2,16 @@ import { Cliente } from '../components/FormClient/types';
 
 interface SyncResult {
   success: boolean;
-  errors?: any[];
+  errors?: string[];
+}
+
+// Defina uma interface para os itens da fila de sincronização
+interface SyncQueueItem {
+  id?: number;
+  type: string;
+  action: 'save' | 'delete';
+  data: Partial<Cliente> | { id: string };
+  timestamp: string;
 }
 
 class OfflineManager {
@@ -137,7 +146,7 @@ class OfflineManager {
   }
 
   private async saveClienteOffline(
-    cliente: Cliente,
+    cliente: Cliente, // Tipo explícito usando a interface importada
   ): Promise<{ success: boolean; isOffline: true }> {
     if (!this.db) {
       console.error('Banco de dados não inicializado');
@@ -149,29 +158,32 @@ class OfflineManager {
       const clientesStore = transaction.objectStore('clientes');
       const syncStore = transaction.objectStore('syncQueue');
 
-      // Cria uma cópia do cliente omitindo o id se for temporário
+      // Cria uma cópia tipada do cliente
       const clienteParaSalvar: Omit<Cliente, 'id'> & { id?: string } = { ...cliente };
 
+      // Lógica de ID temporário/local
       if (clienteParaSalvar.id?.startsWith('temp_')) {
         delete clienteParaSalvar.id;
       }
-
-      // Garante um ID local
       if (!clienteParaSalvar.id) {
         clienteParaSalvar.id = `local_${Date.now()}`;
       }
 
       clienteParaSalvar.pendingSync = true;
 
+      // Operação no IndexedDB
       const clienteRequest = clientesStore.put(clienteParaSalvar);
 
-      const syncRequest = syncStore.add({
+      const syncItem: SyncQueueItem = {
         type: 'cliente',
         action: 'save',
         data: clienteParaSalvar,
         timestamp: new Date().toISOString(),
-      });
+      };
 
+      const syncRequest = syncStore.add(syncItem);
+
+      // Handlers de sucesso/erro
       clienteRequest.onsuccess = () => {
         syncRequest.onsuccess = () => resolve({ success: true, isOffline: true });
         syncRequest.onerror = () => resolve({ success: false, isOffline: true });
@@ -247,13 +259,15 @@ class OfflineManager {
         try {
           const response = await fetch(`${this.backendUrl}/clientes`);
           if (response.ok) {
-            let clientes = await response.json();
+            let clientes: Cliente[] = await response.json();
 
-            // Garante que cada cliente tem um ID
-            clientes = clientes.map((cliente) => ({
+            // Garante que cada cliente tem um ID com tipagem explícita
+            clientes = clientes.map((cliente: Partial<Cliente> & { _id?: string }) => ({
               ...cliente,
               id: cliente.id || cliente._id || `temp_${Date.now()}`,
-            }));
+              // Remove _id se existir para evitar duplicação
+              ...(cliente._id && { _id: undefined }),
+            })) as Cliente[];
 
             await this.saveClientesLocally(clientes);
             return clientes;
