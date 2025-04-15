@@ -6,7 +6,8 @@ interface SyncResult {
 }
 
 class OfflineManager {
-  private backendUrl = 'http://localhost:5001';
+  // Usando configuração para frontend
+  private backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
   private dbName = 'HeroPetDB';
   private dbVersion = 1;
   private db: IDBDatabase | null = null;
