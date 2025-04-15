@@ -243,13 +243,18 @@ class OfflineManager {
   // Obtém todos os clientes (sempre do banco local)
   public async getClientes(): Promise<Cliente[]> {
     try {
-      // Primeiro tenta buscar do backend se estiver online
       if (this.isOnline && this.isBackendAlive) {
         try {
           const response = await fetch(`${this.backendUrl}/clientes`);
           if (response.ok) {
-            const clientes = await response.json();
-            // Salva os clientes no IndexedDB
+            let clientes = await response.json();
+
+            // Garante que cada cliente tem um ID
+            clientes = clientes.map((cliente) => ({
+              ...cliente,
+              id: cliente.id || cliente._id || `temp_${Date.now()}`,
+            }));
+
             await this.saveClientesLocally(clientes);
             return clientes;
           }
@@ -258,7 +263,6 @@ class OfflineManager {
         }
       }
 
-      // Se offline ou falha no backend, busca do IndexedDB
       return this.getClientesFromIndexedDB();
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
@@ -292,7 +296,7 @@ class OfflineManager {
   private async saveClientesLocally(clientes: Cliente[]): Promise<void> {
     if (!this.db) return;
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction(['clientes'], 'readwrite');
       const store = transaction.objectStore('clientes');
 
@@ -300,19 +304,34 @@ class OfflineManager {
       const clearRequest = store.clear();
 
       clearRequest.onsuccess = () => {
-        // Adiciona os novos clientes
+        // Adiciona os novos clientes garantindo que cada um tem um ID
         const requests = clientes.map((cliente) => {
-          return new Promise<void>((resolveItem) => {
+          // Garante que o cliente tem um ID válido
+          if (!cliente.id) {
+            cliente.id = `temp_${Date.now()}`; // Cria um ID temporário se não existir
+          }
+
+          return new Promise<void>((resolveItem, rejectItem) => {
             const putRequest = store.put(cliente);
             putRequest.onsuccess = () => resolveItem();
-            putRequest.onerror = () => resolveItem();
+            putRequest.onerror = (event) => {
+              console.error('Error saving cliente:', event);
+              rejectItem(new Error('Failed to save cliente'));
+            };
           });
         });
 
-        Promise.all(requests).then(() => resolve());
+        Promise.all(requests)
+          .then(() => resolve())
+          .catch((error) => {
+            console.error('Error saving clientes:', error);
+            reject(error);
+          });
       };
 
-      clearRequest.onerror = () => resolve();
+      clearRequest.onerror = () => {
+        reject(new Error('Failed to clear clientes store'));
+      };
     });
   }
 
