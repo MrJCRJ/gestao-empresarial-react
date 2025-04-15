@@ -1,6 +1,45 @@
-/* ClienteModal.module.css */
+/* ClienteModal.module.css - Mobile First */
 
-/* Overlay do modal */
+/* Variáveis CSS */
+:root {
+  /* Cores */
+  --primary: #4361ee;
+  --primary-hover: #3a56d4;
+  --primary-disabled: #a5b4fc;
+  --error: #ef233c;
+  --error-light: #fee2e2;
+  --success: #06d6a0;
+  --success-hover: #05bf8e;
+  --danger: #ef233c;
+  --danger-hover: #d90429;
+  --text: #2b2d42;
+  --text-light: #8d99ae;
+  --border: #edf2f4;
+  --border-hover: #e2e8f0;
+  --background: #f8f9fa;
+  --white: #ffffff;
+
+  /* Espaçamentos */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Bordas */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* Transições */
+  --transition: all 0.2s ease;
+}
+
+/* Estilos Base - Mobile */
 .modalOverlay {
   position: fixed;
   top: 0;
@@ -10,259 +49,251 @@
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  padding: var(--space-md);
   z-index: 1000;
-  backdrop-filter: blur(2px);
+  overflow-y: auto;
+  backdrop-filter: blur(4px);
   animation: fadeIn 0.3s ease-out;
 }
 
-/* Conteúdo principal do modal */
 .modalContent {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 800px;
+  background-color: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.3s cubic-bezier(0.18, 0.67, 0.2, 0.99);
 }
 
-/* Cabeçalho do modal */
+/* Cabeçalho - Mobile */
 .modalHeader {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
-  background-color: white;
+  background-color: var(--white);
   z-index: 10;
 }
 
 .modalHeader h2 {
   margin: 0;
-  font-size: 1.5rem;
-  color: #2d3748;
+  font-size: 1.25rem;
+  color: var(--text);
   font-weight: 600;
 }
 
 .closeButton {
-  background: none;
+  background-color: var(--background);
   border: none;
-  cursor: pointer;
-  padding: 0.5rem;
   border-radius: 50%;
-  transition: background-color 0.2s;
-  color: #718096;
+  padding: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
 }
 
 .closeButton:hover {
-  background-color: #f7fafc;
-  color: #4a5568;
+  background-color: var(--border);
+  transform: rotate(90deg);
 }
 
 .closeButton svg {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--text-light);
 }
 
-/* Corpo do modal */
+/* Corpo do Modal - Mobile */
 .modalBody {
-  padding: 1.5rem;
-  flex-grow: 1;
+  padding: var(--space-md);
 }
 
-/* Mensagem de erro de conexão */
-.connectionError {
-  background-color: #fff5f5;
-  color: #c53030;
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid #fed7d7;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-}
-
-.connectionError p {
-  margin: 0;
-}
-
-/* Grupos de campos */
+/* Seções do Formulário - Mobile */
 .fieldset {
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  background-color: var(--background);
 }
 
 .fieldset legend {
-  padding: 0 0.5rem;
+  padding: 0 var(--space-xs);
   font-weight: 600;
-  color: #4a5568;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  color: var(--primary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  background-color: var(--white);
+  border-radius: var(--radius-sm);
 }
 
-/* Layout do formulário */
+/* Layout do Formulário - Mobile */
 .formRow {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
 }
 
 .formGroup {
-  flex: 1;
-  min-width: 200px;
-  margin-bottom: 0.75rem;
+  width: 100%;
+  margin-bottom: var(--space-sm);
 }
 
 .formGroup label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--space-xs);
   font-size: 0.875rem;
   font-weight: 500;
-  color: #4a5568;
+  color: var(--text);
 }
 
-.formGroup label:after {
+.formGroup label.required:after {
   content: '*';
-  color: #e53e3e;
+  color: var(--error);
   margin-left: 0.25rem;
-  display: none;
 }
 
-.formGroup label[for]:after {
-  display: inline;
-}
-
-/* Elementos do formulário */
+/* Elementos do Formulário - Mobile */
 input,
 select,
 textarea {
   width: 100%;
   padding: 0.625rem 0.75rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-  background-color: white;
+  transition: var(--transition);
+  background-color: var(--white);
 }
 
 input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
 }
 
 input:disabled,
 select:disabled,
 textarea:disabled {
-  background-color: #f7fafc;
-  color: #a0aec0;
+  background-color: var(--background);
+  color: var(--text-light);
   cursor: not-allowed;
 }
 
 textarea {
-  min-height: 80px;
+  min-height: 100px;
   resize: vertical;
 }
 
 select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23718096' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238d99ae' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
-  background-size: 16px 12px;
+  background-size: 12px;
 }
 
-/* Estilos para erros */
+/* Estilos de Erro - Mobile */
 .errorInput {
-  border-color: #e53e3e;
+  border-color: var(--error);
 }
 
 .errorInput:focus {
-  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+  box-shadow: 0 0 0 2px rgba(239, 35, 60, 0.1);
 }
 
 .errorMessage {
   display: block;
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: #e53e3e;
+  color: var(--error);
 }
 
-/* Ações do formulário */
+/* Ações do Formulário - Mobile */
 .formActions,
 .viewActions {
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e2e8f0;
+  flex-direction: column-reverse;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
 }
 
-button {
-  padding: 0.625rem 1.25rem;
-  border-radius: 4px;
+.button {
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
   font-weight: 500;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  width: 100%;
   border: none;
 }
 
-.saveButton {
-  background-color: #4299e1;
-  color: white;
-}
-
-.saveButton:hover:not(:disabled) {
-  background-color: #3182ce;
-}
-
-.saveButton:disabled {
-  background-color: #bee3f8;
+.button:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
-.cancelButton {
-  background-color: white;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
-.cancelButton:hover {
-  background-color: #f7fafc;
-  border-color: #cbd5e0;
+.primaryButton {
+  background-color: var(--primary);
+  color: var(--white);
 }
 
-.editButton {
-  background-color: #38a169;
-  color: white;
+.primaryButton:hover:not(:disabled) {
+  background-color: var(--primary-hover);
 }
 
-.editButton:hover:not(:disabled) {
-  background-color: #2f855a;
+.primaryButton:disabled {
+  background-color: var(--primary-disabled);
 }
 
-.deleteButton {
-  background-color: #e53e3e;
-  color: white;
+.secondaryButton {
+  background-color: var(--white);
+  color: var(--primary);
+  border: 1px solid var(--primary);
 }
 
-.deleteButton:hover:not(:disabled) {
-  background-color: #c53030;
+.secondaryButton:hover:not(:disabled) {
+  background-color: var(--background);
+}
+
+.successButton {
+  background-color: var(--success);
+  color: var(--white);
+}
+
+.successButton:hover:not(:disabled) {
+  background-color: var(--success-hover);
+}
+
+.dangerButton {
+  background-color: var(--danger);
+  color: var(--white);
+}
+
+.dangerButton:hover:not(:disabled) {
+  background-color: var(--danger-hover);
 }
 
 /* Animações */
@@ -286,28 +317,50 @@ button {
   }
 }
 
-/* Responsividade */
-@media (max-width: 640px) {
+/* Media Queries para Telas Maiores */
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+  .modalOverlay {
+    align-items: center;
+  }
+
   .modalContent {
-    width: 95%;
+    width: 90%;
+    max-width: 700px;
   }
 
   .formRow {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .formGroup {
-    min-width: 100%;
+    flex-direction: row;
   }
 
   .formActions,
   .viewActions {
-    flex-direction: column-reverse;
-    gap: 0.75rem;
+    flex-direction: row;
+    justify-content: flex-end;
   }
 
-  button {
-    width: 100%;
+  .button {
+    width: auto;
+    padding: 0.75rem 1.5rem;
+  }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .modalContent {
+    max-width: 800px;
+  }
+
+  .modalHeader h2 {
+    font-size: 1.5rem;
+  }
+
+  .fieldset {
+    padding: var(--space-lg);
+  }
+
+  .button {
+    padding: 0.75rem 2rem;
   }
 }

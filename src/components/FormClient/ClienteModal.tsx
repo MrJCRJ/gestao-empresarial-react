@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import styles from './ClienteModal.module.css';
 import { Cliente } from './types';
 
-// Implementação das máscaras
+// Implementação das máscaras (mantido igual)
 const maskCnpj = (value: string) => {
   return value
     .replace(/\D/g, '')
@@ -174,7 +174,12 @@ export function ClienteModal({
                 ? 'Editar Cliente'
                 : 'Detalhes do Cliente'}
           </h2>
-          <button onClick={onClose} className={styles.closeButton} aria-label="Fechar">
+          <button
+            onClick={onClose}
+            className={styles.closeButton}
+            aria-label="Fechar"
+            disabled={loading}
+          >
             <FiX />
           </button>
         </div>
@@ -186,13 +191,16 @@ export function ClienteModal({
               <legend>Identificação</legend>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="tipo">Tipo de Cliente</label>
+                  <label htmlFor="tipo" className={styles.label}>
+                    Tipo de Cliente
+                  </label>
                   <select
                     id="tipo"
                     name="tipo"
                     value={formData.tipo}
                     onChange={handleChange}
                     disabled={mode === 'view'}
+                    className={styles.input}
                   >
                     <option value="petshop">Petshop</option>
                     <option value="mercadinho">Mercadinho</option>
@@ -201,7 +209,9 @@ export function ClienteModal({
                   </select>
                 </div>
                 <div className={styles.formGroup}>
-                  <label htmlFor="nomeFantasia">Nome Fantasia *</label>
+                  <label htmlFor="nomeFantasia" className={`${styles.label} ${styles.required}`}>
+                    Nome Fantasia
+                  </label>
                   <input
                     id="nomeFantasia"
                     type="text"
@@ -210,7 +220,7 @@ export function ClienteModal({
                     onChange={handleChange}
                     disabled={mode === 'view'}
                     placeholder="Nome do estabelecimento"
-                    className={errors.nomeFantasia ? styles.errorInput : ''}
+                    className={`${styles.input} ${errors.nomeFantasia ? styles.errorInput : ''}`}
                   />
                   {errors.nomeFantasia && (
                     <span className={styles.errorMessage}>{errors.nomeFantasia}</span>
@@ -220,7 +230,9 @@ export function ClienteModal({
 
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="razaoSocial">Razão Social</label>
+                  <label htmlFor="razaoSocial" className={styles.label}>
+                    Razão Social
+                  </label>
                   <input
                     id="razaoSocial"
                     type="text"
@@ -229,10 +241,13 @@ export function ClienteModal({
                     onChange={handleChange}
                     disabled={mode === 'view'}
                     placeholder="Razão Social"
+                    className={styles.input}
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label htmlFor="documento">CNPJ/CPF *</label>
+                  <label htmlFor="documento" className={`${styles.label} ${styles.required}`}>
+                    CNPJ/CPF
+                  </label>
                   <input
                     id="documento"
                     type="text"
@@ -241,7 +256,7 @@ export function ClienteModal({
                     onChange={handleChange}
                     disabled={mode === 'view'}
                     placeholder="00.000.000/0000-00 ou 000.000.000-00"
-                    className={errors.documento ? styles.errorInput : ''}
+                    className={`${styles.input} ${errors.documento ? styles.errorInput : ''}`}
                   />
                   {errors.documento && (
                     <span className={styles.errorMessage}>{errors.documento}</span>
@@ -255,7 +270,9 @@ export function ClienteModal({
               <legend>Contato</legend>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="responsavel">Responsável</label>
+                  <label htmlFor="responsavel" className={styles.label}>
+                    Responsável
+                  </label>
                   <input
                     id="responsavel"
                     type="text"
@@ -264,10 +281,13 @@ export function ClienteModal({
                     onChange={handleChange}
                     disabled={mode === 'view'}
                     placeholder="Nome do responsável"
+                    className={styles.input}
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label htmlFor="telefone">Telefone *</label>
+                  <label htmlFor="telefone" className={`${styles.label} ${styles.required}`}>
+                    Telefone
+                  </label>
                   <input
                     id="telefone"
                     type="tel"
@@ -276,14 +296,16 @@ export function ClienteModal({
                     onChange={handleChange}
                     disabled={mode === 'view'}
                     placeholder="(00) 00000-0000"
-                    className={errors.telefone ? styles.errorInput : ''}
+                    className={`${styles.input} ${errors.telefone ? styles.errorInput : ''}`}
                   />
                   {errors.telefone && (
                     <span className={styles.errorMessage}>{errors.telefone}</span>
                   )}
                 </div>
                 <div className={styles.formGroup}>
-                  <label htmlFor="email">Email</label>
+                  <label htmlFor="email" className={styles.label}>
+                    Email
+                  </label>
                   <input
                     id="email"
                     type="email"
@@ -292,7 +314,7 @@ export function ClienteModal({
                     onChange={handleChange}
                     disabled={mode === 'view'}
                     placeholder="contato@email.com"
-                    className={errors.email ? styles.errorInput : ''}
+                    className={`${styles.input} ${errors.email ? styles.errorInput : ''}`}
                   />
                   {errors.email && <span className={styles.errorMessage}>{errors.email}</span>}
                 </div>
@@ -303,7 +325,9 @@ export function ClienteModal({
             <fieldset className={styles.fieldset}>
               <legend>Endereço</legend>
               <div className={styles.formGroup}>
-                <label htmlFor="cep">CEP</label>
+                <label htmlFor="cep" className={styles.label}>
+                  CEP
+                </label>
                 <input
                   id="cep"
                   type="text"
@@ -313,12 +337,15 @@ export function ClienteModal({
                   onBlur={handleCepBlur}
                   disabled={mode === 'view'}
                   placeholder="00000-000"
+                  className={styles.input}
                 />
               </div>
 
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="logradouro">Endereço</label>
+                  <label htmlFor="logradouro" className={styles.label}>
+                    Endereço
+                  </label>
                   <input
                     id="logradouro"
                     type="text"
@@ -326,10 +353,13 @@ export function ClienteModal({
                     value={formData.endereco.logradouro || ''}
                     onChange={handleChange}
                     disabled={mode === 'view'}
+                    className={styles.input}
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label htmlFor="numero">Número</label>
+                  <label htmlFor="numero" className={styles.label}>
+                    Número
+                  </label>
                   <input
                     id="numero"
                     type="text"
@@ -337,13 +367,16 @@ export function ClienteModal({
                     value={formData.endereco.numero || ''}
                     onChange={handleChange}
                     disabled={mode === 'view'}
+                    className={styles.input}
                   />
                 </div>
               </div>
 
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label htmlFor="bairro">Bairro</label>
+                  <label htmlFor="bairro" className={styles.label}>
+                    Bairro
+                  </label>
                   <input
                     id="bairro"
                     type="text"
@@ -351,10 +384,13 @@ export function ClienteModal({
                     value={formData.endereco.bairro || ''}
                     onChange={handleChange}
                     disabled={mode === 'view'}
+                    className={styles.input}
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label htmlFor="localidade">Cidade</label>
+                  <label htmlFor="localidade" className={styles.label}>
+                    Cidade
+                  </label>
                   <input
                     id="localidade"
                     type="text"
@@ -362,10 +398,13 @@ export function ClienteModal({
                     value={formData.endereco.localidade || ''}
                     onChange={handleChange}
                     disabled={mode === 'view'}
+                    className={styles.input}
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label htmlFor="uf">Estado</label>
+                  <label htmlFor="uf" className={styles.label}>
+                    Estado
+                  </label>
                   <input
                     id="uf"
                     type="text"
@@ -374,6 +413,7 @@ export function ClienteModal({
                     onChange={handleChange}
                     disabled={mode === 'view'}
                     maxLength={2}
+                    className={styles.input}
                   />
                 </div>
               </div>
@@ -381,7 +421,9 @@ export function ClienteModal({
 
             {/* Info adicional */}
             <div className={styles.formGroup}>
-              <label htmlFor="observacoes">Observações</label>
+              <label htmlFor="observacoes" className={styles.label}>
+                Observações
+              </label>
               <textarea
                 id="observacoes"
                 rows={3}
@@ -390,6 +432,7 @@ export function ClienteModal({
                 onChange={handleChange}
                 disabled={mode === 'view'}
                 placeholder="Alguma informação adicional..."
+                className={styles.input}
               />
             </div>
 
@@ -398,36 +441,38 @@ export function ClienteModal({
                 <button
                   type="button"
                   onClick={() => onSave({ ...formData })}
-                  className={styles.editButton}
+                  className={`${styles.button} ${styles.successButton}`}
+                  disabled={loading}
                 >
-                  Editar
+                  {loading ? <span className={styles.loading}>Editar</span> : 'Editar'}
                 </button>
                 {onDelete && (
                   <button
                     type="button"
                     onClick={() => onDelete(formData.id)}
-                    className={styles.deleteButton}
+                    className={`${styles.button} ${styles.dangerButton}`}
+                    disabled={loading}
                   >
-                    Excluir
+                    {loading ? <span className={styles.loading}>Excluir</span> : 'Excluir'}
                   </button>
                 )}
               </div>
             ) : (
               <div className={styles.formActions}>
                 <button
-                  type="submit"
-                  className={styles.saveButton}
-                  disabled={!isFormValid || loading}
-                >
-                  {loading ? 'Salvando...' : 'Salvar'}
-                </button>
-                <button
                   type="button"
                   onClick={onClose}
-                  className={styles.cancelButton}
+                  className={`${styles.button} ${styles.secondaryButton}`}
                   disabled={loading}
                 >
                   Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className={`${styles.button} ${styles.primaryButton}`}
+                  disabled={!isFormValid || loading}
+                >
+                  {loading ? <span className={styles.loading}>Salvando...</span> : 'Salvar'}
                 </button>
               </div>
             )}
