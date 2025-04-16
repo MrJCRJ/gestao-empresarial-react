@@ -1,58 +1,103 @@
+/* FormCliente.module.css - Mobile First */
+
+/* Variáveis CSS */
+:root {
+  /* Cores */
+  --primary: #4361ee;
+  --primary-hover: #3a56d4;
+  --primary-light: #e6ecfe;
+  --error: #ef233c;
+  --error-light: #fee2e2;
+  --success: #06d6a0;
+  --success-hover: #05bf8e;
+  --success-light: #d1fae5;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --text: #2b2d42;
+  --text-light: #8d99ae;
+  --border: #edf2f4;
+  --border-hover: #e2e8f0;
+  --background: #f8f9fa;
+  --white: #ffffff;
+
+  /* Espaçamentos */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Bordas */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* Transições */
+  --transition-fast: all 0.15s ease-out;
+  --transition-normal: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Container principal */
 .container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
+  width: 100%;
+  padding: var(--space-md);
 }
 
-/* Barra de status */
+/* Barra de status - Mobile */
 .statusBar {
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.5rem;
-  border-radius: 6px;
+  padding: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  border-radius: var(--radius-sm);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-xs);
   font-size: 0.875rem;
+  border: 1px solid var(--border);
 }
 
 .statusContent {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
 }
 
 .statusIcon {
   font-size: 1rem;
+  display: flex;
+  align-items: center;
 }
 
 /* Variantes de status */
 .statusOnline {
-  background-color: #f0fff4;
-  color: #2f855a;
-  border: 1px solid #c6f6d5;
+  background-color: var(--success-light);
+  color: var(--success);
+  border-color: var(--success);
 }
 
 .statusOffline {
-  background-color: #fffaf0;
-  color: #dd6b20;
-  border: 1px solid #feebc8;
+  background-color: var(--warning-light);
+  color: var(--warning);
+  border-color: var(--warning);
 }
 
 .statusError {
-  background-color: #fff5f5;
-  color: #c53030;
-  border: 1px solid #fed7d7;
+  background-color: var(--error-light);
+  color: var(--error);
+  border-color: var(--error);
 }
 
-.statusChecking,
-.statusSyncing {
-  background-color: #ebf8ff;
-  color: #2b6cb0;
-  border: 1px solid #bee3f8;
+.statusChecking {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
 /* Spinner */
@@ -71,29 +116,27 @@
   }
 }
 
-/* Botões na barra de status */
-.retryButton,
-.syncButton {
-  margin-left: auto;
-  padding: 0.25rem 0.5rem;
+/* Botões na barra de status - Mobile */
+.actionButton {
+  padding: var(--space-xs) var(--space-sm);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--space-xs);
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: var(--transition-fast);
 }
 
 .retryButton {
-  background-color: #fed7d7;
-  color: #c53030;
+  background-color: var(--error-light);
+  color: var(--error);
 }
 
 .syncButton {
-  background-color: #c6f6d5;
-  color: #2f855a;
+  background-color: var(--success-light);
+  color: var(--success);
 }
 
 .retryButton:hover,
@@ -109,18 +152,18 @@
 
 /* Mensagens */
 .lastSync {
-  margin-left: auto;
   font-size: 0.75rem;
   opacity: 0.8;
+  margin-left: auto;
 }
 
 .syncMessage {
-  padding: 0.5rem;
+  padding: var(--space-xs);
   background-color: rgba(255, 255, 255, 0.7);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-xs);
   font-size: 0.8125rem;
   animation: fadeIn 0.3s ease-out;
 }
@@ -137,17 +180,37 @@
 }
 
 /* Responsividade */
-@media (max-width: 768px) {
-  .statusContent {
-    flex-wrap: wrap;
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-lg);
   }
 
-  .lastSync,
-  .retryButton,
-  .syncButton {
-    margin-left: 0;
-    width: 100%;
-    justify-content: center;
-    margin-top: 0.5rem;
+  .statusBar {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .statusContent {
+    flex-wrap: nowrap;
+  }
+
+  .lastSync {
+    margin-left: auto;
+  }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+  .statusBar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .syncMessage {
+    margin-left: var(--space-md);
   }
 }

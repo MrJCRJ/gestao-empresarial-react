@@ -1,4 +1,4 @@
-import { FiPlus, FiEdit2, FiTrash2, FiUser, FiRefreshCw } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiUser, FiRefreshCw, FiEye } from 'react-icons/fi';
 import styles from './ClientesList.module.css';
 import { Cliente } from './types';
 
@@ -28,6 +28,7 @@ export function ClientesList({
       <div className={styles.header}>
         <div className={styles.headerTitle}>
           <h2>Clientes Cadastrados</h2>
+          {!isOnline && <span className={styles.offlineBadge}>Modo offline</span>}
           {isLoading && <span className={styles.loadingIndicator}>Carregando...</span>}
         </div>
 
@@ -35,15 +36,20 @@ export function ClientesList({
           {onRefresh && (
             <button
               onClick={onRefresh}
-              className={styles.refreshButton}
-              disabled={isLoading}
+              className={styles.iconButton}
+              disabled={isLoading || !isOnline}
               title="Recarregar clientes"
+              aria-label="Recarregar"
             >
               <FiRefreshCw className={isLoading ? styles.spin : ''} />
             </button>
           )}
 
-          <button onClick={onAdd} className={styles.addButton}>
+          <button
+            onClick={onAdd}
+            className={`${styles.button} ${styles.primaryButton}`}
+            disabled={!isOnline}
+          >
             <FiPlus /> Novo Cliente
           </button>
         </div>
@@ -51,9 +57,13 @@ export function ClientesList({
 
       {clientes.length === 0 ? (
         <div className={styles.emptyState}>
-          <FiUser size={48} />
+          <FiUser size={48} color="var(--text-light)" />
           <p>Nenhum cliente cadastrado</p>
-          <button onClick={onAdd} className={styles.addButton}>
+          <button
+            onClick={onAdd}
+            className={`${styles.button} ${styles.primaryButton}`}
+            disabled={!isOnline}
+          >
             <FiPlus /> Adicionar primeiro cliente
           </button>
         </div>
@@ -91,16 +101,19 @@ export function ClientesList({
                     e.stopPropagation();
                     onView(cliente);
                   }}
-                  className={styles.viewButton}
+                  className={`${styles.actionButton} ${styles.viewButton}`}
+                  aria-label="Ver detalhes"
                 >
-                  Detalhes
+                  <FiEye /> Detalhes
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onEdit(cliente);
                   }}
-                  className={styles.editButton}
+                  className={`${styles.actionButton} ${styles.editButton}`}
+                  disabled={!isOnline}
+                  aria-label="Editar"
                 >
                   <FiEdit2 />
                 </button>
@@ -109,7 +122,9 @@ export function ClientesList({
                     e.stopPropagation();
                     onDelete(cliente.id);
                   }}
-                  className={styles.deleteButton}
+                  className={`${styles.actionButton} ${styles.deleteButton}`}
+                  disabled={!isOnline}
+                  aria-label="Excluir"
                 >
                   <FiTrash2 />
                 </button>

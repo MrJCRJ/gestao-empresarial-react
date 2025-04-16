@@ -152,12 +152,24 @@ export default function FormCliente() {
     const statusMap = {
       checking: {
         icon: <div className={styles.spinner} />,
-        text: 'Verificando...',
+        text: 'Verificando conexão...',
         className: styles.statusChecking,
       },
-      online: { icon: <FiWifi />, text: 'Online', className: styles.statusOnline },
-      error: { icon: <FiAlertTriangle />, text: 'Erro no servidor', className: styles.statusError },
-      offline: { icon: <FiWifiOff />, text: 'Offline', className: styles.statusOffline },
+      online: {
+        icon: <FiWifi className={styles.statusIcon} />,
+        text: 'Conectado',
+        className: styles.statusOnline,
+      },
+      error: {
+        icon: <FiAlertTriangle className={styles.statusIcon} />,
+        text: 'Erro no servidor',
+        className: styles.statusError,
+      },
+      offline: {
+        icon: <FiWifiOff className={styles.statusIcon} />,
+        text: 'Sem conexão',
+        className: styles.statusOffline,
+      },
     };
 
     const status = statusMap[backendStatus];
@@ -168,7 +180,11 @@ export default function FormCliente() {
           {status.icon}
           <span>{status.text}</span>
           {backendStatus === 'error' && (
-            <button onClick={checkBackendStatus} className={styles.retryButton}>
+            <button
+              onClick={checkBackendStatus}
+              className={`${styles.actionButton} ${styles.retryButton}`}
+              disabled={!isOnline}
+            >
               <FiRefreshCw /> Tentar novamente
             </button>
           )}
@@ -204,6 +220,7 @@ export default function FormCliente() {
           onClose={() => setModalState({ ...modalState, open: false })}
           onSave={handleSaveCliente}
           onDelete={modalState.mode === 'view' ? handleDeleteCliente : undefined}
+          loading={isLoading}
         />
       )}
     </div>
