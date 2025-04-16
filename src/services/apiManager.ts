@@ -1,4 +1,5 @@
 import { Cliente } from '../components/FormClient/types';
+import { FornecedorType } from '../components/FormFornecedor/types';
 
 class ApiManager {
   private backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
@@ -8,6 +9,52 @@ class ApiManager {
   constructor() {
     this.setupListeners();
     this.checkBackendStatus();
+  }
+
+  public getBackendUrl(): string {
+    return this.backendUrl;
+  }
+
+  public async getFornecedores(): Promise<FornecedorType[]> {
+    try {
+      const response = await fetch(`${this.backendUrl}/fornecedores`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      let fornecedores: FornecedorType[] = await response.json();
+
+      // Garante que cada fornecedor tem um ID
+      fornecedores = fornecedores.map((fornecedor: Partial<FornecedorType> & { _id?: string }) => ({
+        ...fornecedor,
+        id: fornecedor.id || fornecedor._id || `temp_${Date.now()}`,
+        ...(fornecedor._id && { _id: undefined }),
+      })) as FornecedorType[];
+
+      return fornecedores;
+    } catch (error) {
+      console.error('Erro ao buscar fornecedores:', error);
+      return [];
+    }
+  }
+
+  public async saveFornecedor(fornecedor: FornecedorType): Promise<{ success: boolean }> {
+    try {
+      const method = fornecedor.id ? 'PUT' : 'POST';
+      const url = fornecedor.id
+        ? `${this.backendUrl}/fornecedores/${fornecedor.id}`
+        : `${this.backendUrl}/fornecedores`;
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fornecedor),
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao salvar fornecedor:', error);
+      return { success: false };
+    }
   }
 
   // Verifica status do backend

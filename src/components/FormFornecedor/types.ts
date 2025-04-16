@@ -2,6 +2,7 @@
 export type FornecedorTab = 'dados' | 'pedidos' | 'catalogo';
 
 export type FornecedorType = {
+  id: string;
   nome: string;
   cnpj: string;
   telefone: string;
