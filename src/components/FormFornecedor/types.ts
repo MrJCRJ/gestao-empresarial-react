@@ -20,7 +20,10 @@ export type PedidoType = {
   produto: string;
   quantidade: number;
   data: string;
-  status: string;
+  status: 'Pendente' | 'Entregue';
+  fornecedorCnpj: string;
+  valorUnitario: number;
+  valorTotal: number;
 };
 
 export type ProdutoType = {

@@ -120,17 +120,6 @@ export default function FormFornecedor() {
     }
   };
 
-  const handleAddPedido = () => {
-    const novoPedido: PedidoType = {
-      id: Date.now().toString(),
-      produto: 'Novo Produto',
-      quantidade: 1,
-      data: new Date().toLocaleDateString(),
-      status: 'Pendente',
-    };
-    setPedidos([...pedidos, novoPedido]);
-  };
-
   const openNewFornecedorModal = () => {
     setSelectedFornecedor(initialFornecedorState);
     setShowModal(true);
@@ -139,6 +128,39 @@ export default function FormFornecedor() {
   const openEditFornecedorModal = (fornecedor: FornecedorType) => {
     setSelectedFornecedor(fornecedor);
     setShowModal(true);
+  };
+
+  useEffect(() => {
+    const loadPedidos = async () => {
+      try {
+        const response = await fetch(`${apiManager.getBackendUrl()}/pedidos`);
+        if (response.ok) {
+          const data = await response.json();
+          setPedidos(data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar pedidos:', error);
+      }
+    };
+
+    loadPedidos();
+  }, []);
+
+  const handleAddPedido = async (novoPedido: PedidoType) => {
+    try {
+      const response = await fetch(`${apiManager.getBackendUrl()}/pedidos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(novoPedido),
+      });
+
+      if (response.ok) {
+        const pedidoSalvo = await response.json();
+        setPedidos([...pedidos, pedidoSalvo]);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar pedido:', error);
+    }
   };
 
   return (
@@ -215,7 +237,11 @@ export default function FormFornecedor() {
         )}
 
         {activeTab === 'pedidos' && (
-          <PedidosFornecedor pedidos={pedidos} onAddPedido={handleAddPedido} />
+          <PedidosFornecedor
+            pedidos={pedidos}
+            onAddPedido={handleAddPedido}
+            fornecedores={fornecedores}
+          />
         )}
 
         {activeTab === 'catalogo' && <CatalogoFornecedor produtos={produtos} />}
