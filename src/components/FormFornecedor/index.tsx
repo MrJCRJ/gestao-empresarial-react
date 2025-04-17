@@ -40,7 +40,12 @@ export default function FormFornecedor() {
       const response = await fetch(`${apiManager.getBackendUrl()}/fornecedores`);
       if (response.ok) {
         const data = await response.json();
-        setFornecedores(data);
+        // Garante que cada fornecedor tem um ID válido
+        const fornecedoresFormatados = data.map((f: any) => ({
+          ...f,
+          id: f._id || f.id, // Usa _id se id não existir
+        }));
+        setFornecedores(fornecedoresFormatados);
       }
     } catch (error) {
       console.error('Erro ao carregar fornecedores:', error);
@@ -90,6 +95,29 @@ export default function FormFornecedor() {
         : [...prev.tipoRacao, tipo];
       return { ...prev, tipoRacao: updatedTipos };
     });
+  };
+
+  const handleDeleteFornecedor = async (fornecedor: FornecedorType) => {
+    const idParaDeletar = fornecedor._id || fornecedor.id;
+
+    if (!idParaDeletar) {
+      console.error('Fornecedor sem ID válido:', fornecedor);
+      alert('Fornecedor não possui um ID válido para exclusão');
+      return;
+    }
+
+    if (!window.confirm(`Tem certeza que deseja excluir ${fornecedor.nome}?`)) {
+      return;
+    }
+
+    try {
+      await apiManager.deleteFornecedor(idParaDeletar);
+      loadFornecedores();
+      alert(`${fornecedor.nome} foi excluído com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao deletar:', error);
+      alert(`Falha ao excluir: ${error}`);
+    }
   };
 
   const handleAddPedido = () => {
@@ -168,6 +196,12 @@ export default function FormFornecedor() {
                         className={styles.actionButton}
                       >
                         Editar
+                      </button>
+                      <button
+                        onClick={() => handleDeleteFornecedor(fornecedor)}
+                        className={styles.deleteButton}
+                      >
+                        Excluir
                       </button>
                     </td>
                   </tr>

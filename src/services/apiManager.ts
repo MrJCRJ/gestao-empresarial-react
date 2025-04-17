@@ -57,6 +57,27 @@ class ApiManager {
     }
   }
 
+  public async deleteFornecedor(id: string): Promise<{ success: boolean }> {
+    if (!id) {
+      throw new Error('ID não fornecido');
+    }
+
+    try {
+      const response = await fetch(`${this.backendUrl}/fornecedores/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}`);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error('Erro na API:', error);
+      throw error;
+    }
+  }
+
   // Verifica status do backend
   private lastHealthCheck = 0;
   private readonly HEALTH_CHECK_INTERVAL = 5000; // 5 segundos

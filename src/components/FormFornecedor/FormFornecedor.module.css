@@ -398,3 +398,18 @@ textarea {
   margin-bottom: 15px;
   color: #333;
 }
+
+/* Adicione no FormFornecedor.module.css */
+.deleteButton {
+  padding: 0.5rem 1rem;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.deleteButton:hover {
+  background-color: #cc0000;
+}
