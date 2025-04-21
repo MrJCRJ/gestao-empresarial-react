@@ -130,14 +130,12 @@ export default function FormFornecedor() {
     setShowModal(true);
   };
 
+  // No useEffect que carrega os pedidos, substitua por:
   useEffect(() => {
     const loadPedidos = async () => {
       try {
-        const response = await fetch(`${apiManager.getBackendUrl()}/pedidos`);
-        if (response.ok) {
-          const data = await response.json();
-          setPedidos(data);
-        }
+        const pedidos = await apiManager.getPedidos();
+        setPedidos(pedidos);
       } catch (error) {
         console.error('Erro ao carregar pedidos:', error);
       }
@@ -148,15 +146,10 @@ export default function FormFornecedor() {
 
   const handleAddPedido = async (novoPedido: PedidoType) => {
     try {
-      const response = await fetch(`${apiManager.getBackendUrl()}/pedidos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(novoPedido),
-      });
-
-      if (response.ok) {
-        const pedidoSalvo = await response.json();
-        setPedidos([...pedidos, pedidoSalvo]);
+      const { success } = await apiManager.savePedido(novoPedido);
+      if (success) {
+        const pedidosAtualizados = await apiManager.getPedidos();
+        setPedidos(pedidosAtualizados);
       }
     } catch (error) {
       console.error('Erro ao salvar pedido:', error);

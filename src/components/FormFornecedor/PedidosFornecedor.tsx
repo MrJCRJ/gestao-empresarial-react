@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { FornecedorType, PedidoType } from './types';
 import styles from './PedidosFornecedor.module.css';
 import { FiPlus, FiX } from 'react-icons/fi';
+import { apiManager } from '../../services/apiManager';
 
 type PedidosFornecedorProps = {
   pedidos: PedidoType[];
@@ -23,6 +24,26 @@ export function PedidosFornecedor({ pedidos, onAddPedido, fornecedores }: Pedido
     valorTotal: 0,
   });
 
+  const handleEditPedido = (pedido: PedidoType) => {
+    setNovoPedido(pedido);
+    setShowModal(true);
+  };
+
+  const handleDeletePedido = async (pedidoId: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este pedido?')) return;
+
+    try {
+      const { success } = await apiManager.deletePedido(pedidoId);
+      if (success) {
+        // Atualize a lista de pedidos chamando a função onAddPedido ou melhor ainda,
+        // modifique o componente pai para lidar com atualizações de pedidos
+        onAddPedido({} as PedidoType); // Isso força uma atualização (solução temporária)
+      }
+    } catch (error) {
+      console.error('Erro ao excluir pedido:', error);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     const newValue = name === 'quantidade' || name === 'valorUnitario' ? Number(value) : value;
@@ -42,31 +63,38 @@ export function PedidosFornecedor({ pedidos, onAddPedido, fornecedores }: Pedido
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // No modal do PedidosFornecedor.tsx, atualize o handleSubmit:
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!novoPedido.fornecedorCnpj || !novoPedido.produto) {
       return alert('Preencha os campos obrigatórios');
     }
 
-    onAddPedido({
-      ...novoPedido,
-      id: Date.now().toString(),
-      valorTotal: novoPedido.quantidade * novoPedido.valorUnitario,
-    });
+    try {
+      const pedidoParaSalvar = {
+        ...novoPedido,
+        valorTotal: novoPedido.quantidade * novoPedido.valorUnitario,
+      };
 
-    // Resetar o formulário
-    setNovoPedido({
-      id: '',
-      produto: '',
-      quantidade: 1,
-      valorUnitario: 0,
-      valorTotal: 0,
-      data: new Date().toISOString().split('T')[0],
-      status: 'Pendente',
-      fornecedorCnpj: '',
-    });
+      onAddPedido(pedidoParaSalvar);
 
-    setShowModal(false);
+      // Resetar o formulário
+      setNovoPedido({
+        id: '',
+        produto: '',
+        quantidade: 1,
+        valorUnitario: 0,
+        valorTotal: 0,
+        data: new Date().toISOString().split('T')[0],
+        status: 'Pendente',
+        fornecedorCnpj: '',
+      });
+
+      setShowModal(false);
+    } catch (error) {
+      console.error('Erro ao salvar pedido:', error);
+    }
   };
 
   const openAddPedidoModal = () => {
@@ -114,8 +142,18 @@ export function PedidosFornecedor({ pedidos, onAddPedido, fornecedores }: Pedido
                     </td>
                     <td>{fornecedor ? `${fornecedor.nome} (${fornecedor.cnpj})` : '—'}</td>
                     <td>
-                      <button className={styles.actionButton}>Editar</button>
-                      <button className={styles.deleteButton}>Excluir</button>
+                      <button
+                        onClick={() => handleEditPedido(pedido)}
+                        className={styles.actionButton}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDeletePedido(pedido.id)}
+                        className={styles.deleteButton}
+                      >
+                        Excluir
+                      </button>
                     </td>
                   </tr>
                 );

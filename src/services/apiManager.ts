@@ -1,5 +1,5 @@
 import { Cliente } from '../components/FormClient/types';
-import { FornecedorType } from '../components/FormFornecedor/types';
+import { FornecedorType, PedidoType } from '../components/FormFornecedor/types';
 
 class ApiManager {
   private backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
@@ -33,6 +33,51 @@ class ApiManager {
     } catch (error) {
       console.error('Erro ao buscar fornecedores:', error);
       return [];
+    }
+  }
+  public async getPedidos(): Promise<PedidoType[]> {
+    try {
+      const response = await fetch(`${this.backendUrl}/pedidos`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Erro ao buscar pedidos:', error);
+      return [];
+    }
+  }
+
+  public async savePedido(pedido: PedidoType): Promise<{ success: boolean }> {
+    try {
+      const method = pedido.id ? 'PUT' : 'POST';
+      const url = pedido.id
+        ? `${this.backendUrl}/pedidos/${pedido.id}`
+        : `${this.backendUrl}/pedidos`;
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pedido),
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao salvar pedido:', error);
+      return { success: false };
+    }
+  }
+
+  public async deletePedido(id: string): Promise<{ success: boolean }> {
+    try {
+      const response = await fetch(`${this.backendUrl}/pedidos/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao deletar pedido:', error);
+      return { success: false };
     }
   }
 
